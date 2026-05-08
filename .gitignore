@@ -1,0 +1,36 @@
+# Claude Code
+.claude/
+CLAUDE.md
+
+# Dependências
+node_modules/
+
+# Variáveis de ambiente
+.env
+.env.local
+.env.*.local
+
+# Build
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+
+# Prisma
+prisma/migrations/
+
+# Testes
+coverage/
+playwright-report/
+test-results/
