@@ -91,7 +91,17 @@ O sistema permite cadastrar voluntários, registrar sua atuação em oficinas, p
 
 > Instruções de instalação e execução serão adicionadas após a configuração do ambiente.
 
+### Documentação da API
+
+A documentação da API é gerada automaticamente usando Swagger/OpenAPI. Para visualizá-la, siga os passos:
+
+1. Inicie a aplicação backend.
+2. Acesse a seguinte URL no seu navegador:
+
+[http://localhost:3000/api-docs](http://localhost:3000/api-docs)
+
 ---
+
 
 ## Equipe
 
