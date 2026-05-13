@@ -1,33 +1,27 @@
 import type { NextFunction, Request, Response } from 'express';
 
-type ProblemDetails = {
-  type: string;
-  title: string;
-  status: number;
-  detail: string;
-  instance: string;
-};
-
-const createProblemDetails = (
-  request: Request,
-  status: number,
-  title: string,
-  detail: string,
-  type: string
-): ProblemDetails => ({
-  type,
-  title,
-  status,
-  detail,
-  instance: request.originalUrl
-});
+import { HttpError } from '../../../shared/errors/http-error';
+import { createProblemDetails } from '../../../shared/http/problem-details';
 
 export const errorHandler = (
-  error: Error & { status?: number; type?: string },
+  error: Error & { type?: string },
   request: Request,
   response: Response,
   _next: NextFunction
 ): void => {
+  if (error instanceof HttpError) {
+    response.status(error.status).json(
+      createProblemDetails(
+        request,
+        error.status,
+        error.title,
+        error.detail,
+        error.type
+      )
+    );
+    return;
+  }
+
   if (error.type === 'entity.parse.failed') {
     response.status(400).json(
       createProblemDetails(
