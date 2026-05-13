@@ -7,11 +7,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Temporary technical model used only to validate Prisma setup and migrations.
-model PrismaBootstrap {
+model Usuario {
   id        Int      @id @default(autoincrement())
+  nome      String
+  email     String   @unique
+  senhaHash String   @map("senha_hash")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@map("prisma_bootstrap")
+  @@map("usuarios")
 }
