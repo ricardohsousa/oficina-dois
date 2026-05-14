@@ -1,35 +1,50 @@
 import type { NextFunction, Request, Response } from 'express';
+import { AppError, type AppErrorField } from '../../../shared/errors/app-error';
 
-import { HttpError } from '../../../shared/errors/http-error';
-import { createProblemDetails } from '../../../shared/http/problem-details';
+type ProblemDetails = {
+  type: string;
+  title: string;
+  status: number;
+  detail: string;
+  instance: string;
+  errors?: AppErrorField[];
+};
+
+const createProblemDetails = (
+  request: Request,
+  status: number,
+  title: string,
+  detail: string,
+  type: string,
+  errors?: AppErrorField[]
+): ProblemDetails => ({
+  type,
+  title,
+  status,
+  detail,
+  instance: request.originalUrl,
+  ...(errors ? { errors } : {})
+});
 
 export const errorHandler = (
-  error: Error & { type?: string },
+  error: Error,
   request: Request,
   response: Response,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _next: NextFunction
 ): void => {
-  if (error instanceof HttpError) {
+  // eslint-disable-next-line no-console
+  console.error(error);
+
+  if (error instanceof AppError) {
     response.status(error.status).json(
       createProblemDetails(
         request,
         error.status,
         error.title,
         error.detail,
-        error.type
-      )
-    );
-    return;
-  }
-
-  if (error.type === 'entity.parse.failed') {
-    response.status(400).json(
-      createProblemDetails(
-        request,
-        400,
-        'Erro de validação',
-        'O corpo da requisição contém JSON inválido.',
-        'https://ellp.local/errors/validation-error'
+        error.type,
+        error.errors
       )
     );
     return;
@@ -40,7 +55,7 @@ export const errorHandler = (
       request,
       500,
       'Erro interno',
-      'Ocorreu um erro inesperado ao processar a requisição.',
+      'Ocorreu um erro inesperado. Tente novamente mais tarde.',
       'https://ellp.local/errors/internal-server-error'
     )
   );
