@@ -17,3 +17,20 @@ model Usuario {
 
   @@map("usuarios")
 }
+
+model Voluntario {
+  id             String   @id @default(uuid())
+  nomeCompleto   String   @map("nome_completo")
+  cpf            String   @unique
+  dataNascimento DateTime @map("data_nascimento")
+  email          String   @unique
+  telefone       String
+  endereco       String
+  dataEntrada    DateTime @map("data_entrada")
+  dataSaida      DateTime? @map("data_saida")
+  ativo          Boolean  @default(true)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@map("voluntarios")
+}

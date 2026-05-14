@@ -1,3 +1,5 @@
+import { AppError } from './app-error';
+
 type HttpErrorInput = {
   status: number;
   title: string;
@@ -5,18 +7,8 @@ type HttpErrorInput = {
   type: string;
 };
 
-export class HttpError extends Error {
-  readonly status: number;
-  readonly title: string;
-  readonly detail: string;
-  readonly type: string;
-
+export class HttpError extends AppError {
   constructor({ status, title, detail, type }: HttpErrorInput) {
-    super(detail);
-    this.name = 'HttpError';
-    this.status = status;
-    this.title = title;
-    this.detail = detail;
-    this.type = type;
+    super({ status, title, detail, type });
   }
 }

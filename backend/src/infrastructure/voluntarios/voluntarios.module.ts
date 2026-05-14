@@ -1,0 +1,18 @@
+import { TokenService } from '../../application/auth/services/token-service';
+import { CriarVoluntarioUseCase } from '../../application/voluntarios/use-cases/criar-voluntario.use-case';
+import { VoluntariosController } from '../../interfaces/http/controllers/voluntarios.controller';
+import { createVoluntariosRoutes } from '../../interfaces/http/routes/voluntarios.routes';
+import { prismaClient } from '../database/prisma/client';
+import { PrismaVoluntarioRepository } from './repositories/prisma-voluntario.repository';
+
+export const createVoluntariosModule = (tokenService: TokenService) => {
+  const voluntarioRepository = new PrismaVoluntarioRepository(prismaClient);
+
+  const criarVoluntarioUseCase = new CriarVoluntarioUseCase(voluntarioRepository);
+
+  const voluntariosController = new VoluntariosController(
+    criarVoluntarioUseCase,
+  );
+
+  return createVoluntariosRoutes(voluntariosController, tokenService);
+};
