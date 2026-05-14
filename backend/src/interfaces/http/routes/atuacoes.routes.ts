@@ -91,6 +91,42 @@ export const createAtuacoesRoutes = (
     atuacoesController.listarPorVoluntario,
   );
 
+  /**
+   * @swagger
+   * /voluntarios/{voluntarioId}/historico:
+   *   get:
+   *     summary: Lista o histórico completo de atuação de um voluntário
+   *     tags: [Atuações]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: voluntarioId
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: ID do voluntário
+   *     responses:
+   *       200:
+   *         description: Histórico de atuação retornado com sucesso
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 $ref: '#/components/schemas/HistoricoAtuacaoResponseDto'
+   *       401:
+   *         description: Não autorizado
+   *       404:
+   *         description: Voluntário não encontrado
+   */
+  router.get(
+    '/voluntarios/:voluntarioId/historico',
+    authMiddleware,
+    atuacoesController.listarHistorico,
+  );
+
   return router;
 };
 
@@ -153,4 +189,52 @@ export const createAtuacoesRoutes = (
  *         updatedAt:
  *           type: string
  *           format: date-time
+ *     HistoricoAtuacaoResponseDto:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         voluntarioId:
+ *           type: string
+ *           format: uuid
+ *         oficinaId:
+ *           type: string
+ *           format: uuid
+ *         dataInicio:
+ *           type: string
+ *           format: date
+ *         dataFim:
+ *           type: string
+ *           format: date
+ *           nullable: true
+ *         cargaHoraria:
+ *           type: integer
+ *           nullable: true
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *         oficina:
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: string
+ *               format: uuid
+ *             nome:
+ *               type: string
+ *             descricao:
+ *               type: string
+ *             status:
+ *               type: string
+ *               enum: [ativa, inativa]
+ *             dataInicio:
+ *               type: string
+ *               format: date
+ *             dataFim:
+ *               type: string
+ *               format: date
+ *               nullable: true
  */

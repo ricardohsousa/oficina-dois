@@ -1,7 +1,11 @@
 import { PrismaClient } from '@prisma/client';
 
 import { Atuacao } from '../../../domain/atuacoes/entities/atuacao';
-import type { AtuacaoRepository } from '../../../domain/atuacoes/repositories/atuacao.repository';
+import type { OficinaStatus } from '../../../domain/oficinas/entities/oficina';
+import type {
+  AtuacaoRepository,
+  HistoricoAtuacao,
+} from '../../../domain/atuacoes/repositories/atuacao.repository';
 
 export class PrismaAtuacaoRepository implements AtuacaoRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -50,6 +54,44 @@ export class PrismaAtuacaoRepository implements AtuacaoRepository {
     });
 
     return data.map((item) => this.mapToDomain(item));
+  }
+
+  async findHistoricoByVoluntario(voluntarioId: string): Promise<HistoricoAtuacao[]> {
+    const data = await this.prisma.atuacao.findMany({
+      where: { voluntarioId },
+      include: {
+        oficina: {
+          select: {
+            id: true,
+            nome: true,
+            descricao: true,
+            status: true,
+            dataInicio: true,
+            dataFim: true,
+          },
+        },
+      },
+      orderBy: [{ dataInicio: 'desc' }, { createdAt: 'desc' }],
+    });
+
+    return data.map((item) => ({
+      id: item.id,
+      voluntarioId: item.voluntarioId,
+      oficinaId: item.oficinaId,
+      dataInicio: item.dataInicio.toISOString().split('T')[0],
+      dataFim: item.dataFim?.toISOString().split('T')[0] ?? null,
+      cargaHoraria: item.cargaHoraria,
+      createdAt: item.createdAt.toISOString(),
+      updatedAt: item.updatedAt.toISOString(),
+      oficina: {
+        id: item.oficina.id,
+        nome: item.oficina.nome,
+        descricao: item.oficina.descricao,
+        status: item.oficina.status as OficinaStatus,
+        dataInicio: item.oficina.dataInicio.toISOString().split('T')[0],
+        dataFim: item.oficina.dataFim?.toISOString().split('T')[0] ?? null,
+      },
+    }));
   }
 
   async findByVoluntarioAndOficina(
