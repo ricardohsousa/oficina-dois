@@ -100,6 +100,11 @@ A documentação da API é gerada automaticamente usando Swagger/OpenAPI. Para v
 
 [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
 
+Entre os endpoints documentados, o backend passa a expor também a geração e o download do termo de voluntariado em PDF:
+
+- `POST /voluntarios/{id}/termo`
+- `GET /termos/{id}/download`
+
 ---
 
 
