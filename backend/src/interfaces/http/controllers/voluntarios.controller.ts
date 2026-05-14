@@ -5,6 +5,7 @@ import type { BuscarVoluntarioPorIdUseCase } from '../../../application/voluntar
 import type { CriarVoluntarioUseCase } from '../../../application/voluntarios/use-cases/criar-voluntario.use-case';
 import type { ListarVoluntariosUseCase } from '../../../application/voluntarios/use-cases/listar-voluntarios.use-case';
 import {
+  parseVoluntarioFilters,
   validateCreateVoluntario,
 } from '../../validations/voluntarios-http.validator';
 
@@ -16,9 +17,10 @@ export class VoluntariosController {
     private readonly buscarVoluntarioPorIdUseCase: BuscarVoluntarioPorIdUseCase,
   ) {}
 
-  list = async (_request: Request, response: Response, next: NextFunction): Promise<void> => {
+  list = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
     try {
-      const voluntarios = await this.listarVoluntariosUseCase.execute();
+      const filters = parseVoluntarioFilters(request.query as Record<string, unknown>);
+      const voluntarios = await this.listarVoluntariosUseCase.execute(filters);
 
       response.status(200).json(voluntarios);
     } catch (error) {
