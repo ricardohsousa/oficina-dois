@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { FiltrarVoluntariosDto } from '../../../application/voluntarios/dtos/filtrar-voluntarios.dto';
 import { Voluntario } from '../../../domain/voluntarios/entities/voluntario';
 import { VoluntarioRepository } from '../../../domain/voluntarios/repositories/voluntario.repository';
 
@@ -62,9 +63,25 @@ export class PrismaVoluntarioRepository implements VoluntarioRepository {
 
   async findAll(): Promise<Voluntario[]> {
     const data = await this.prisma.voluntario.findMany({
-      orderBy: {
-        nomeCompleto: 'asc',
+      orderBy: { nomeCompleto: 'asc' },
+    });
+
+    return data.map((item) => this.mapToDomain(item));
+  }
+
+  async findWithFilters(filters: FiltrarVoluntariosDto): Promise<Voluntario[]> {
+    const data = await this.prisma.voluntario.findMany({
+      where: {
+        ...(filters.nome && {
+          nomeCompleto: { contains: filters.nome, mode: 'insensitive' },
+        }),
+        ...(filters.cpf && { cpf: filters.cpf }),
+        ...(filters.email && {
+          email: { contains: filters.email, mode: 'insensitive' },
+        }),
+        ...(filters.ativo !== undefined && { ativo: filters.ativo }),
       },
+      orderBy: { nomeCompleto: 'asc' },
     });
 
     return data.map((item) => this.mapToDomain(item));

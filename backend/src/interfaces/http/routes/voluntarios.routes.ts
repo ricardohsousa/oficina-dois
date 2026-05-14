@@ -15,10 +15,35 @@ export const createVoluntariosRoutes = (
    * @swagger
    * /voluntarios:
    *   get:
-   *     summary: Lista os voluntários cadastrados
+   *     summary: Lista e filtra voluntários cadastrados
    *     tags: [Voluntários]
    *     security:
    *       - bearerAuth: []
+   *     parameters:
+   *       - in: query
+   *         name: nome
+   *         schema:
+   *           type: string
+   *         description: Filtra por nome (busca parcial, sem distinção de maiúsculas/minúsculas)
+   *         example: "João"
+   *       - in: query
+   *         name: cpf
+   *         schema:
+   *           type: string
+   *         description: Filtra por CPF (com ou sem formatação, busca exata)
+   *         example: "12345678900"
+   *       - in: query
+   *         name: email
+   *         schema:
+   *           type: string
+   *         description: Filtra por e-mail (busca parcial, sem distinção de maiúsculas/minúsculas)
+   *         example: "joao@"
+   *       - in: query
+   *         name: ativo
+   *         schema:
+   *           type: boolean
+   *         description: Filtra por status ativo/inativo
+   *         example: true
    *     responses:
    *       200:
    *         description: Lista de voluntários retornada com sucesso
