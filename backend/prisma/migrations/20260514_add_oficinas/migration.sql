@@ -1,5 +1,5 @@
 -- CreateTable
-CREATE TABLE "oficinas" (
+CREATE TABLE IF NOT EXISTS "oficinas" (
     "id" TEXT NOT NULL,
     "nome" TEXT NOT NULL,
     "descricao" TEXT NOT NULL,
