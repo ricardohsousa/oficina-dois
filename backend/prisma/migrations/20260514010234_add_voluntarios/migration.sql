@@ -1,5 +1,5 @@
 -- CreateTable
-CREATE TABLE "voluntarios" (
+CREATE TABLE IF NOT EXISTS "voluntarios" (
     "id" TEXT NOT NULL,
     "nome_completo" TEXT NOT NULL,
     "cpf" TEXT NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE "voluntarios" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "voluntarios_cpf_key" ON "voluntarios"("cpf");
+CREATE UNIQUE INDEX IF NOT EXISTS "voluntarios_cpf_key" ON "voluntarios"("cpf");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "voluntarios_email_key" ON "voluntarios"("email");
+CREATE UNIQUE INDEX IF NOT EXISTS "voluntarios_email_key" ON "voluntarios"("email");
