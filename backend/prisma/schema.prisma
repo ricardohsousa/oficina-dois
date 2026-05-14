@@ -28,22 +28,43 @@ model Oficina {
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
+  atuacoes    Atuacao[]
+
   @@map("oficinas")
 }
 
 model Voluntario {
-  id             String   @id @default(uuid())
-  nomeCompleto   String   @map("nome_completo")
-  cpf            String   @unique
-  dataNascimento DateTime @map("data_nascimento")
-  email          String   @unique
+  id             String    @id @default(uuid())
+  nomeCompleto   String    @map("nome_completo")
+  cpf            String    @unique
+  dataNascimento DateTime  @map("data_nascimento")
+  email          String    @unique
   telefone       String
   endereco       String
-  dataEntrada    DateTime @map("data_entrada")
+  dataEntrada    DateTime  @map("data_entrada")
   dataSaida      DateTime? @map("data_saida")
-  ativo          Boolean  @default(true)
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  ativo          Boolean   @default(true)
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  atuacoes       Atuacao[]
 
   @@map("voluntarios")
+}
+
+model Atuacao {
+  id           String    @id @default(uuid())
+  voluntarioId String    @map("voluntario_id")
+  oficinaId    String    @map("oficina_id")
+  dataInicio   DateTime  @map("data_inicio")
+  dataFim      DateTime? @map("data_fim")
+  cargaHoraria Int?      @map("carga_horaria")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  voluntario   Voluntario @relation(fields: [voluntarioId], references: [id])
+  oficina      Oficina    @relation(fields: [oficinaId], references: [id])
+
+  @@unique([voluntarioId, oficinaId])
+  @@map("atuacoes")
 }
