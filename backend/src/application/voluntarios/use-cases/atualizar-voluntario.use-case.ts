@@ -41,12 +41,12 @@ export class AtualizarVoluntarioUseCase {
 
     const voluntario = Voluntario.load({
       id,
-      nomeCompleto: input.nomeCompleto.trim(),
+      nomeCompleto: input.nomeCompleto,
       cpf,
       dataNascimento: input.dataNascimento,
       email,
-      telefone: input.telefone.trim(),
-      endereco: input.endereco.trim(),
+      telefone: input.telefone,
+      endereco: input.endereco,
       dataEntrada: input.dataEntrada,
       dataSaida: existing.dataSaida,
       ativo: existing.ativo,
