@@ -2,6 +2,7 @@ import express from 'express';
 import swaggerUi from 'swagger-ui-express';
 
 import { JwtTokenService } from './infrastructure/auth/jwt/jwt-token-service';
+import { createOficinasModule } from './infrastructure/oficinas/oficinas.module';
 import { createVoluntariosModule } from './infrastructure/voluntarios/voluntarios.module';
 import { errorHandler } from './interfaces/http/middlewares/error-handler';
 import { notFoundHandler } from './interfaces/http/middlewares/not-found-handler';
@@ -22,6 +23,7 @@ export const createApp = ({ jwtSecret }: CreateAppInput) => {
   app.use(healthRoutes);
   app.use(createAuthRoutes(jwtSecret));
   app.use(createVoluntariosModule(tokenService));
+  app.use(createOficinasModule(tokenService));
 
   app.use(notFoundHandler);
   app.use(errorHandler);
