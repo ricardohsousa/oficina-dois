@@ -1,5 +1,6 @@
 import type { TokenService } from '../../application/auth/services/token-service';
 import { AssociarVoluntarioOficinaUseCase } from '../../application/atuacoes/use-cases/associar-voluntario-oficina.use-case';
+import { ListarHistoricoDoVoluntarioUseCase } from '../../application/atuacoes/use-cases/listar-historico-do-voluntario.use-case';
 import { ListarAtuacoesDoVoluntarioUseCase } from '../../application/atuacoes/use-cases/listar-atuacoes-do-voluntario.use-case';
 import { prismaClient } from '../database/prisma/client';
 import { PrismaAtuacaoRepository } from './repositories/prisma-atuacao.repository';
@@ -23,10 +24,15 @@ export const createAtuacoesModule = (tokenService: TokenService) => {
     atuacaoRepository,
     voluntarioRepository,
   );
+  const listarHistoricoDoVoluntarioUseCase = new ListarHistoricoDoVoluntarioUseCase(
+    atuacaoRepository,
+    voluntarioRepository,
+  );
 
   const atuacoesController = new AtuacoesController(
     associarVoluntarioOficinaUseCase,
     listarAtuacoesDoVoluntarioUseCase,
+    listarHistoricoDoVoluntarioUseCase,
   );
 
   return createAtuacoesRoutes(atuacoesController, tokenService);

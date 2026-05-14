@@ -11,7 +11,8 @@
     "db:migrate": "prisma migrate dev",
     "prestart": "npm run build",
     "prisma:studio": "prisma studio",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "test": "node --import tsx --test tests/**/*.test.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.7.0",
