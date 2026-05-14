@@ -64,4 +64,42 @@ export class PrismaAtuacaoRepository implements AtuacaoRepository {
 
     return this.mapToDomain(data);
   }
+
+  async reconcileForVoluntarioInactivation(
+    voluntarioId: string,
+    dataSaida: string,
+  ): Promise<void> {
+    const dataSaidaDate = new Date(dataSaida);
+    const updatedAt = new Date();
+    const atuacoes = await this.prisma.atuacao.findMany({
+      where: { voluntarioId },
+      select: {
+        id: true,
+        dataInicio: true,
+        dataFim: true,
+      },
+    });
+
+    await this.prisma.$transaction(
+      atuacoes.flatMap((atuacao) => {
+        if (atuacao.dataInicio > dataSaidaDate) {
+          return this.prisma.atuacao.delete({
+            where: { id: atuacao.id },
+          });
+        }
+
+        if (atuacao.dataFim === null || atuacao.dataFim > dataSaidaDate) {
+          return this.prisma.atuacao.update({
+            where: { id: atuacao.id },
+            data: {
+              dataFim: dataSaidaDate,
+              updatedAt,
+            },
+          });
+        }
+
+        return [];
+      }),
+    );
+  }
 }
