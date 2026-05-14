@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 
+import type { AtualizarVoluntarioUseCase } from '../../../application/voluntarios/use-cases/atualizar-voluntario.use-case';
 import type { BuscarVoluntarioPorIdUseCase } from '../../../application/voluntarios/use-cases/buscar-voluntario-por-id.use-case';
 import type { CriarVoluntarioUseCase } from '../../../application/voluntarios/use-cases/criar-voluntario.use-case';
 import type { ListarVoluntariosUseCase } from '../../../application/voluntarios/use-cases/listar-voluntarios.use-case';
@@ -10,6 +11,7 @@ import {
 export class VoluntariosController {
   constructor(
     private readonly criarVoluntarioUseCase: CriarVoluntarioUseCase,
+    private readonly atualizarVoluntarioUseCase: AtualizarVoluntarioUseCase,
     private readonly listarVoluntariosUseCase: ListarVoluntariosUseCase,
     private readonly buscarVoluntarioPorIdUseCase: BuscarVoluntarioPorIdUseCase,
   ) {}
@@ -42,6 +44,20 @@ export class VoluntariosController {
       const voluntario = await this.criarVoluntarioUseCase.execute(input);
 
       response.status(201).json(voluntario);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  update = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
+    try {
+      const input = validateCreateVoluntario(request.body);
+      const voluntario = await this.atualizarVoluntarioUseCase.execute(
+        String(request.params.id ?? ''),
+        input,
+      );
+
+      response.status(200).json(voluntario);
     } catch (error) {
       next(error);
     }

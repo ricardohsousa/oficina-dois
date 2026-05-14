@@ -40,6 +40,26 @@ export class PrismaVoluntarioRepository implements VoluntarioRepository {
     });
   }
 
+  async update(voluntario: Voluntario): Promise<void> {
+    await this.prisma.voluntario.update({
+      where: {
+        id: voluntario.id,
+      },
+      data: {
+        nomeCompleto: voluntario.nomeCompleto,
+        cpf: voluntario.cpf,
+        dataNascimento: new Date(voluntario.dataNascimento),
+        email: voluntario.email,
+        telefone: voluntario.telefone,
+        endereco: voluntario.endereco,
+        dataEntrada: new Date(voluntario.dataEntrada),
+        dataSaida: voluntario.dataSaida ? new Date(voluntario.dataSaida) : null,
+        ativo: voluntario.ativo,
+        updatedAt: new Date(voluntario.updatedAt),
+      },
+    });
+  }
+
   async findAll(): Promise<Voluntario[]> {
     const data = await this.prisma.voluntario.findMany({
       orderBy: {

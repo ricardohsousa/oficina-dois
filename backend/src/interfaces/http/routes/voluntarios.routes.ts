@@ -66,6 +66,46 @@ export const createVoluntariosRoutes = (
   /**
    * @swagger
    * /voluntarios/{id}:
+   *   put:
+   *     summary: Atualiza um voluntário por ID
+   *     tags: [Voluntários]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: ID do voluntário
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/CriarVoluntarioDto'
+   *     responses:
+   *       200:
+   *         description: Voluntário atualizado com sucesso
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/VoluntarioResponseDto'
+   *       400:
+   *         description: Erro de validação nos dados enviados
+   *       401:
+   *         description: Não autorizado
+   *       404:
+   *         description: Voluntário não encontrado
+   *       409:
+   *         description: Conflito de dados (CPF ou E-mail já cadastrado)
+   */
+  router.put('/voluntarios/:id', authMiddleware, voluntariosController.update);
+
+  /**
+   * @swagger
+   * /voluntarios/{id}:
    *   get:
    *     summary: Consulta um voluntário por ID
    *     tags: [Voluntários]
