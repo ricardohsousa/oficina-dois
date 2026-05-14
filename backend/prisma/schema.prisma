@@ -48,6 +48,7 @@ model Voluntario {
   updatedAt      DateTime  @updatedAt @map("updated_at")
 
   atuacoes       Atuacao[]
+  termos         TermoVoluntariado[]
 
   @@map("voluntarios")
 }
@@ -67,4 +68,18 @@ model Atuacao {
 
   @@unique([voluntarioId, oficinaId])
   @@map("atuacoes")
+}
+
+model TermoVoluntariado {
+  id            String     @id @default(uuid())
+  voluntarioId  String     @map("voluntario_id")
+  nomeArquivo   String     @map("nome_arquivo")
+  caminhoArquivo String    @map("caminho_arquivo")
+  mimeType      String     @default("application/pdf") @map("mime_type")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+
+  voluntario    Voluntario @relation(fields: [voluntarioId], references: [id])
+
+  @@map("termos_voluntariado")
 }
