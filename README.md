@@ -91,6 +91,17 @@ O sistema permite cadastrar voluntários, registrar sua atuação em oficinas, p
 
 > Instruções de instalação e execução serão adicionadas após a configuração do ambiente.
 
+### Reparar histórico local do Prisma
+
+Se `npm run db:migrate` falhar com erro de `shadow database` nas migrations antigas, execute no diretório `backend`:
+
+```bash
+npm run db:repair-migrations
+npm run db:migrate
+```
+
+O primeiro comando atualiza os checksums das migrations legadas em `_prisma_migrations` no banco local para mantê-las compatíveis com a versão corrigida do repositório.
+
 ### Documentação da API
 
 A documentação da API é gerada automaticamente usando Swagger/OpenAPI. Para visualizá-la, siga os passos:

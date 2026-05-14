@@ -9,6 +9,7 @@
     "dev": "tsx watch src/server.ts",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
+    "db:repair-migrations": "node scripts/repair-prisma-migration-checksums.mjs",
     "prestart": "npm run build",
     "prisma:studio": "prisma studio",
     "start": "node dist/server.js",
