@@ -14,6 +14,28 @@ export const createVoluntariosRoutes = (
   /**
    * @swagger
    * /voluntarios:
+   *   get:
+   *     summary: Lista os voluntários cadastrados
+   *     tags: [Voluntários]
+   *     security:
+   *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: Lista de voluntários retornada com sucesso
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 $ref: '#/components/schemas/VoluntarioResponseDto'
+   *       401:
+   *         description: Não autorizado
+   */
+  router.get('/voluntarios', authMiddleware, voluntariosController.list);
+
+  /**
+   * @swagger
+   * /voluntarios:
    *   post:
    *     summary: Cria um novo voluntário
    *     tags: [Voluntários]
@@ -40,6 +62,36 @@ export const createVoluntariosRoutes = (
    *         description: Conflito de dados (CPF ou E-mail já cadastrado)
    */
   router.post('/voluntarios', authMiddleware, voluntariosController.create);
+
+  /**
+   * @swagger
+   * /voluntarios/{id}:
+   *   get:
+   *     summary: Consulta um voluntário por ID
+   *     tags: [Voluntários]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: ID do voluntário
+   *     responses:
+   *       200:
+   *         description: Voluntário encontrado
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/VoluntarioResponseDto'
+   *       401:
+   *         description: Não autorizado
+   *       404:
+   *         description: Voluntário não encontrado
+   */
+  router.get('/voluntarios/:id', authMiddleware, voluntariosController.getById);
 
   return router;
 };
