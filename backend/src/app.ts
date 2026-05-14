@@ -2,6 +2,7 @@ import express from 'express';
 import swaggerUi from 'swagger-ui-express';
 
 import { JwtTokenService } from './infrastructure/auth/jwt/jwt-token-service';
+import { createAtuacoesModule } from './infrastructure/atuacoes/atuacoes.module';
 import { createOficinasModule } from './infrastructure/oficinas/oficinas.module';
 import { createVoluntariosModule } from './infrastructure/voluntarios/voluntarios.module';
 import { errorHandler } from './interfaces/http/middlewares/error-handler';
@@ -24,6 +25,7 @@ export const createApp = ({ jwtSecret }: CreateAppInput) => {
   app.use(createAuthRoutes(jwtSecret));
   app.use(createVoluntariosModule(tokenService));
   app.use(createOficinasModule(tokenService));
+  app.use(createAtuacoesModule(tokenService));
 
   app.use(notFoundHandler);
   app.use(errorHandler);
