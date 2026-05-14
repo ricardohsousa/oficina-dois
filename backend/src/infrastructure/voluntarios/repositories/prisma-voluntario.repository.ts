@@ -5,6 +5,30 @@ import { VoluntarioRepository } from '../../../domain/voluntarios/repositories/v
 export class PrismaVoluntarioRepository implements VoluntarioRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
+  private mapToDomain(data: {
+    id: string;
+    nomeCompleto: string;
+    cpf: string;
+    dataNascimento: Date;
+    email: string;
+    telefone: string;
+    endereco: string;
+    dataEntrada: Date;
+    dataSaida: Date | null;
+    ativo: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+  }): Voluntario {
+    return Voluntario.load({
+      ...data,
+      dataNascimento: data.dataNascimento.toISOString().split('T')[0],
+      dataEntrada: data.dataEntrada.toISOString().split('T')[0],
+      dataSaida: data.dataSaida?.toISOString().split('T')[0] ?? null,
+      createdAt: data.createdAt.toISOString(),
+      updatedAt: data.updatedAt.toISOString(),
+    });
+  }
+
   async create(voluntario: Voluntario): Promise<void> {
     await this.prisma.voluntario.create({
       data: {
@@ -16,6 +40,28 @@ export class PrismaVoluntarioRepository implements VoluntarioRepository {
     });
   }
 
+  async findAll(): Promise<Voluntario[]> {
+    const data = await this.prisma.voluntario.findMany({
+      orderBy: {
+        nomeCompleto: 'asc',
+      },
+    });
+
+    return data.map((item) => this.mapToDomain(item));
+  }
+
+  async findById(id: string): Promise<Voluntario | null> {
+    const data = await this.prisma.voluntario.findUnique({
+      where: { id },
+    });
+
+    if (!data) {
+      return null;
+    }
+
+    return this.mapToDomain(data);
+  }
+
   async findByCpf(cpf: string): Promise<Voluntario | null> {
     const data = await this.prisma.voluntario.findUnique({
       where: { cpf },
@@ -25,14 +71,7 @@ export class PrismaVoluntarioRepository implements VoluntarioRepository {
       return null;
     }
 
-    return Voluntario.load({
-      ...data,
-      dataNascimento: data.dataNascimento.toISOString().split('T')[0],
-      dataEntrada: data.dataEntrada.toISOString().split('T')[0],
-      dataSaida: data.dataSaida?.toISOString().split('T')[0] ?? null,
-      createdAt: data.createdAt.toISOString(),
-      updatedAt: data.updatedAt.toISOString(),
-    });
+    return this.mapToDomain(data);
   }
 
   async findByEmail(email: string): Promise<Voluntario | null> {
@@ -44,14 +83,7 @@ export class PrismaVoluntarioRepository implements VoluntarioRepository {
       return null;
     }
 
-    return Voluntario.load({
-      ...data,
-      dataNascimento: data.dataNascimento.toISOString().split('T')[0],
-      dataEntrada: data.dataEntrada.toISOString().split('T')[0],
-      dataSaida: data.dataSaida?.toISOString().split('T')[0] ?? null,
-      createdAt: data.createdAt.toISOString(),
-      updatedAt: data.updatedAt.toISOString(),
-    });
+    return this.mapToDomain(data);
   }
 }
 
