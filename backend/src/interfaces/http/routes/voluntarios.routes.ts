@@ -130,6 +130,40 @@ export const createVoluntariosRoutes = (
 
   /**
    * @swagger
+ * /voluntarios/{id}/inativar:
+ *   patch:
+ *     summary: Inativa um voluntário por ID e registra a data de saída automaticamente
+ *     tags: [Voluntários]
+ *     security:
+ *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: ID do voluntÃ¡rio
+ *     responses:
+ *       200:
+ *         description: Voluntário inativado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/VoluntarioResponseDto'
+ *       400:
+ *         description: Erro de validação nos dados enviados
+ *       401:
+ *         description: Não autorizado
+ *       404:
+ *         description: Voluntário não encontrado
+ *       409:
+ *         description: Voluntário já está inativo
+   */
+  router.patch('/voluntarios/:id/inativar', authMiddleware, voluntariosController.inativar);
+
+  /**
+   * @swagger
    * /voluntarios/{id}:
    *   get:
    *     summary: Consulta um voluntário por ID
