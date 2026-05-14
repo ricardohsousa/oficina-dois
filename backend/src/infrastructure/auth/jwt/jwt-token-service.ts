@@ -35,8 +35,7 @@ export class JwtTokenService implements TokenService {
         typeof decodedToken.email !== 'string' ||
         typeof decodedToken.nome !== 'string' ||
         !decodedToken.sub ||
-        !decodedToken.email ||
-        !decodedToken.nome
+        !decodedToken.email
       ) {
         throw new Error('Invalid token payload.');
       }
