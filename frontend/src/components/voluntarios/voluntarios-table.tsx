@@ -23,9 +23,10 @@ const formatDate = (value: string) => {
 
 type VoluntariosTableProps = {
   items: VoluntarioResponseDto[];
+  onRowClick?: (id: string) => void;
 };
 
-export function VoluntariosTable({ items }: VoluntariosTableProps) {
+export function VoluntariosTable({ items, onRowClick }: VoluntariosTableProps) {
   return (
     <Table>
       <TableHeader>
@@ -39,7 +40,11 @@ export function VoluntariosTable({ items }: VoluntariosTableProps) {
       </TableHeader>
       <TableBody>
         {items.map((voluntario) => (
-          <TableRow key={voluntario.id}>
+          <TableRow
+            key={voluntario.id}
+            className={onRowClick ? 'cursor-pointer hover:bg-muted/60' : undefined}
+            onClick={() => onRowClick?.(voluntario.id)}
+          >
             <TableCell className="font-medium">{voluntario.nomeCompleto}</TableCell>
             <TableCell>{voluntario.email}</TableCell>
             <TableCell>{voluntario.telefone}</TableCell>
