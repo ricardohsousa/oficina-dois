@@ -104,3 +104,65 @@ test('TermosController.download responde 200 com headers e binario do PDF', asyn
   );
   assert.equal(response.body, buffer);
 });
+
+test('TermosController.gerar encaminha erros para o next middleware', async () => {
+  const expectedError = new Error('falha ao gerar termo');
+
+  const controller = new TermosController(
+    {
+      execute: async () => {
+        throw expectedError;
+      },
+    },
+    {
+      execute: async () => {
+        throw new Error('nao deveria baixar');
+      },
+    },
+  );
+
+  const response = createResponse();
+  const nextCalls: unknown[] = [];
+
+  await controller.gerar(
+    { params: { voluntarioId: 'vol-1' }, auth: null } as never,
+    response as never,
+    (error?: unknown) => {
+      nextCalls.push(error);
+    },
+  );
+
+  assert.equal(response.statusCode, 0);
+  assert.deepEqual(nextCalls, [expectedError]);
+});
+
+test('TermosController.download encaminha erros para o next middleware', async () => {
+  const expectedError = new Error('falha ao baixar termo');
+
+  const controller = new TermosController(
+    {
+      execute: async () => {
+        throw new Error('nao deveria gerar');
+      },
+    },
+    {
+      execute: async () => {
+        throw expectedError;
+      },
+    },
+  );
+
+  const response = createResponse();
+  const nextCalls: unknown[] = [];
+
+  await controller.download(
+    { params: { termoId: 'termo-1' } } as never,
+    response as never,
+    (error?: unknown) => {
+      nextCalls.push(error);
+    },
+  );
+
+  assert.equal(response.statusCode, 0);
+  assert.deepEqual(nextCalls, [expectedError]);
+});

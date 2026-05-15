@@ -271,3 +271,176 @@ test('GerarTermoVoluntariadoUseCase valida dados obrigatorios pendentes', async 
     },
   );
 });
+
+test('GerarTermoVoluntariadoUseCase exclui arquivo e repropaga erro quando transacao falha', async () => {
+  const deletedPaths: string[] = [];
+  const transactionError = new Error('falha na transação');
+
+  const useCase = new GerarTermoVoluntariadoUseCase(
+    {
+      create: async () => undefined,
+      findAll: async () => [],
+      findWithFilters: async () => [],
+      findById: async () => createVoluntario(),
+      findByCpf: async () => null,
+      findByEmail: async () => null,
+      update: async () => undefined,
+    },
+    {
+      create: async () => undefined,
+      findByVoluntario: async () => [],
+      findHistoricoByVoluntario: async () => createHistorico(),
+      findByVoluntarioAndOficina: async () => null,
+      reconcileForVoluntarioInactivation: async () => undefined,
+    },
+    {
+      create: async () => undefined,
+      findById: async () => null,
+    },
+    { generate: async () => Buffer.from('pdf-content') },
+    {
+      save: async (fileName) => `storage/termos/${fileName}`,
+      read: async () => Buffer.alloc(0),
+      delete: async (path) => {
+        deletedPaths.push(path);
+      },
+    },
+    {
+      runInTransaction: async () => {
+        throw transactionError;
+      },
+    },
+    {
+      execute: async () => undefined,
+    },
+  );
+
+  await assert.rejects(
+    () => useCase.execute('vol-1'),
+    (error: unknown) => {
+      assert.equal(error, transactionError);
+      return true;
+    },
+  );
+
+  assert.equal(deletedPaths.length, 1);
+  assert.match(deletedPaths[0], /storage\/termos\//);
+});
+
+test('GerarTermoVoluntariadoUseCase gera descricao sem historico de atuacao', async () => {
+  let receivedDescription = '';
+
+  const useCase = new GerarTermoVoluntariadoUseCase(
+    {
+      create: async () => undefined,
+      findAll: async () => [],
+      findWithFilters: async () => [],
+      findById: async () => createVoluntario(),
+      findByCpf: async () => null,
+      findByEmail: async () => null,
+      update: async () => undefined,
+    },
+    {
+      create: async () => undefined,
+      findByVoluntario: async () => [],
+      findHistoricoByVoluntario: async () => [],
+      findByVoluntarioAndOficina: async () => null,
+      reconcileForVoluntarioInactivation: async () => undefined,
+    },
+    {
+      create: async () => undefined,
+      findById: async () => null,
+    },
+    {
+      generate: async (data) => {
+        receivedDescription = data.descricaoAtuacao;
+        return Buffer.from('pdf-content');
+      },
+    },
+    {
+      save: async (fileName) => `storage/termos/${fileName}`,
+      read: async () => Buffer.alloc(0),
+      delete: async () => undefined,
+    },
+    {
+      runInTransaction: async (operation) => operation({ transaction: {} }),
+    },
+    {
+      execute: async () => undefined,
+    },
+  );
+
+  await useCase.execute('vol-1');
+
+  assert.equal(receivedDescription, 'Sem histórico de atuação registrado até a data de geração.');
+});
+
+test('GerarTermoVoluntariadoUseCase formata item de historico sem dataFim e sem cargaHoraria', async () => {
+  let receivedDescription = '';
+
+  const historicoSemFim: HistoricoAtuacao[] = [
+    {
+      id: 'atu-2',
+      voluntarioId: 'vol-1',
+      oficinaId: 'ofi-2',
+      dataInicio: '2026-04-01',
+      dataFim: null,
+      cargaHoraria: null,
+      createdAt: '2026-04-01T10:00:00.000Z',
+      updatedAt: '2026-04-01T10:00:00.000Z',
+      oficina: {
+        id: 'ofi-2',
+        nome: 'Oficina de Robótica',
+        descricao: 'Robótica educacional',
+        status: 'ativa',
+        dataInicio: '2026-04-01',
+        dataFim: null,
+      },
+    },
+  ];
+
+  const useCase = new GerarTermoVoluntariadoUseCase(
+    {
+      create: async () => undefined,
+      findAll: async () => [],
+      findWithFilters: async () => [],
+      findById: async () => createVoluntario(),
+      findByCpf: async () => null,
+      findByEmail: async () => null,
+      update: async () => undefined,
+    },
+    {
+      create: async () => undefined,
+      findByVoluntario: async () => [],
+      findHistoricoByVoluntario: async () => historicoSemFim,
+      findByVoluntarioAndOficina: async () => null,
+      reconcileForVoluntarioInactivation: async () => undefined,
+    },
+    {
+      create: async () => undefined,
+      findById: async () => null,
+    },
+    {
+      generate: async (data) => {
+        receivedDescription = data.descricaoAtuacao;
+        return Buffer.from('pdf-content');
+      },
+    },
+    {
+      save: async (fileName) => `storage/termos/${fileName}`,
+      read: async () => Buffer.alloc(0),
+      delete: async () => undefined,
+    },
+    {
+      runInTransaction: async (operation) => operation({ transaction: {} }),
+    },
+    {
+      execute: async () => undefined,
+    },
+  );
+
+  await useCase.execute('vol-1');
+
+  assert.match(receivedDescription, /atual/);
+  assert.doesNotMatch(receivedDescription, /carga horária/);
+});
