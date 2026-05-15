@@ -6,6 +6,8 @@ import type {
   AtuacaoRepository,
   HistoricoAtuacao,
 } from '../../../domain/atuacoes/repositories/atuacao.repository';
+import type { TransactionContext } from '../../../shared/database/transaction-manager';
+import { resolvePrismaClient } from '../../database/prisma/transaction-context';
 
 export class PrismaAtuacaoRepository implements AtuacaoRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -32,8 +34,10 @@ export class PrismaAtuacaoRepository implements AtuacaoRepository {
     });
   }
 
-  async create(atuacao: Atuacao): Promise<void> {
-    await this.prisma.atuacao.create({
+  async create(atuacao: Atuacao, context?: TransactionContext): Promise<void> {
+    const prisma = resolvePrismaClient(this.prisma, context);
+
+    await prisma.atuacao.create({
       data: {
         id: atuacao.id,
         voluntarioId: atuacao.voluntarioId,
@@ -47,8 +51,12 @@ export class PrismaAtuacaoRepository implements AtuacaoRepository {
     });
   }
 
-  async findByVoluntario(voluntarioId: string): Promise<Atuacao[]> {
-    const data = await this.prisma.atuacao.findMany({
+  async findByVoluntario(
+    voluntarioId: string,
+    context?: TransactionContext,
+  ): Promise<Atuacao[]> {
+    const prisma = resolvePrismaClient(this.prisma, context);
+    const data = await prisma.atuacao.findMany({
       where: { voluntarioId },
       orderBy: { dataInicio: 'asc' },
     });
@@ -56,8 +64,12 @@ export class PrismaAtuacaoRepository implements AtuacaoRepository {
     return data.map((item) => this.mapToDomain(item));
   }
 
-  async findHistoricoByVoluntario(voluntarioId: string): Promise<HistoricoAtuacao[]> {
-    const data = await this.prisma.atuacao.findMany({
+  async findHistoricoByVoluntario(
+    voluntarioId: string,
+    context?: TransactionContext,
+  ): Promise<HistoricoAtuacao[]> {
+    const prisma = resolvePrismaClient(this.prisma, context);
+    const data = await prisma.atuacao.findMany({
       where: { voluntarioId },
       include: {
         oficina: {
@@ -97,8 +109,10 @@ export class PrismaAtuacaoRepository implements AtuacaoRepository {
   async findByVoluntarioAndOficina(
     voluntarioId: string,
     oficinaId: string,
+    context?: TransactionContext,
   ): Promise<Atuacao | null> {
-    const data = await this.prisma.atuacao.findUnique({
+    const prisma = resolvePrismaClient(this.prisma, context);
+    const data = await prisma.atuacao.findUnique({
       where: { voluntarioId_oficinaId: { voluntarioId, oficinaId } },
     });
 
@@ -110,10 +124,12 @@ export class PrismaAtuacaoRepository implements AtuacaoRepository {
   async reconcileForVoluntarioInactivation(
     voluntarioId: string,
     dataSaida: string,
+    context?: TransactionContext,
   ): Promise<void> {
+    const prisma = resolvePrismaClient(this.prisma, context);
     const dataSaidaDate = new Date(dataSaida);
     const updatedAt = new Date();
-    const atuacoes = await this.prisma.atuacao.findMany({
+    const atuacoes = await prisma.atuacao.findMany({
       where: { voluntarioId },
       select: {
         id: true,
@@ -122,26 +138,23 @@ export class PrismaAtuacaoRepository implements AtuacaoRepository {
       },
     });
 
-    await this.prisma.$transaction(
-      atuacoes.flatMap((atuacao) => {
-        if (atuacao.dataInicio > dataSaidaDate) {
-          return this.prisma.atuacao.delete({
-            where: { id: atuacao.id },
-          });
-        }
+    for (const atuacao of atuacoes) {
+      if (atuacao.dataInicio > dataSaidaDate) {
+        await prisma.atuacao.delete({
+          where: { id: atuacao.id },
+        });
+        continue;
+      }
 
-        if (atuacao.dataFim === null || atuacao.dataFim > dataSaidaDate) {
-          return this.prisma.atuacao.update({
-            where: { id: atuacao.id },
-            data: {
-              dataFim: dataSaidaDate,
-              updatedAt,
-            },
-          });
-        }
-
-        return [];
-      }),
-    );
+      if (atuacao.dataFim === null || atuacao.dataFim > dataSaidaDate) {
+        await prisma.atuacao.update({
+          where: { id: atuacao.id },
+          data: {
+            dataFim: dataSaidaDate,
+            updatedAt,
+          },
+        });
+      }
+    }
   }
 }

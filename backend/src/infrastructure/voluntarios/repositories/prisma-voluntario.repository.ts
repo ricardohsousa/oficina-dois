@@ -1,7 +1,9 @@
 import { PrismaClient } from '@prisma/client';
 import { FiltrarVoluntariosDto } from '../../../application/voluntarios/dtos/filtrar-voluntarios.dto';
+import { TransactionContext } from '../../../shared/database/transaction-manager';
 import { Voluntario } from '../../../domain/voluntarios/entities/voluntario';
 import { VoluntarioRepository } from '../../../domain/voluntarios/repositories/voluntario.repository';
+import { resolvePrismaClient } from '../../database/prisma/transaction-context';
 
 export class PrismaVoluntarioRepository implements VoluntarioRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -30,8 +32,10 @@ export class PrismaVoluntarioRepository implements VoluntarioRepository {
     });
   }
 
-  async create(voluntario: Voluntario): Promise<void> {
-    await this.prisma.voluntario.create({
+  async create(voluntario: Voluntario, context?: TransactionContext): Promise<void> {
+    const prisma = resolvePrismaClient(this.prisma, context);
+
+    await prisma.voluntario.create({
       data: {
         ...voluntario.toJSON(),
         dataNascimento: new Date(voluntario.dataNascimento),
@@ -41,8 +45,10 @@ export class PrismaVoluntarioRepository implements VoluntarioRepository {
     });
   }
 
-  async update(voluntario: Voluntario): Promise<void> {
-    await this.prisma.voluntario.update({
+  async update(voluntario: Voluntario, context?: TransactionContext): Promise<void> {
+    const prisma = resolvePrismaClient(this.prisma, context);
+
+    await prisma.voluntario.update({
       where: {
         id: voluntario.id,
       },
@@ -87,8 +93,9 @@ export class PrismaVoluntarioRepository implements VoluntarioRepository {
     return data.map((item) => this.mapToDomain(item));
   }
 
-  async findById(id: string): Promise<Voluntario | null> {
-    const data = await this.prisma.voluntario.findUnique({
+  async findById(id: string, context?: TransactionContext): Promise<Voluntario | null> {
+    const prisma = resolvePrismaClient(this.prisma, context);
+    const data = await prisma.voluntario.findUnique({
       where: { id },
     });
 
@@ -99,8 +106,9 @@ export class PrismaVoluntarioRepository implements VoluntarioRepository {
     return this.mapToDomain(data);
   }
 
-  async findByCpf(cpf: string): Promise<Voluntario | null> {
-    const data = await this.prisma.voluntario.findUnique({
+  async findByCpf(cpf: string, context?: TransactionContext): Promise<Voluntario | null> {
+    const prisma = resolvePrismaClient(this.prisma, context);
+    const data = await prisma.voluntario.findUnique({
       where: { cpf },
     });
 
@@ -111,8 +119,9 @@ export class PrismaVoluntarioRepository implements VoluntarioRepository {
     return this.mapToDomain(data);
   }
 
-  async findByEmail(email: string): Promise<Voluntario | null> {
-    const data = await this.prisma.voluntario.findUnique({
+  async findByEmail(email: string, context?: TransactionContext): Promise<Voluntario | null> {
+    const prisma = resolvePrismaClient(this.prisma, context);
+    const data = await prisma.voluntario.findUnique({
       where: { email },
     });
 
@@ -123,4 +132,3 @@ export class PrismaVoluntarioRepository implements VoluntarioRepository {
     return this.mapToDomain(data);
   }
 }
-

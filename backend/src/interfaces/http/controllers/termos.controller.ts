@@ -1,7 +1,9 @@
+import { toAuditoriaActor } from '../../../application/auditoria/services/to-auditoria-actor';
 import type { NextFunction, Request, Response } from 'express';
 
 import type { DownloadTermoVoluntariadoUseCase } from '../../../application/termos/use-cases/download-termo-voluntariado.use-case';
 import type { GerarTermoVoluntariadoUseCase } from '../../../application/termos/use-cases/gerar-termo-voluntariado.use-case';
+import type { AuthenticatedRequest } from '../middlewares/authentication.middleware';
 
 export class TermosController {
   constructor(
@@ -13,6 +15,7 @@ export class TermosController {
     try {
       const termo = await this.gerarTermoVoluntariadoUseCase.execute(
         String(request.params.voluntarioId ?? ''),
+        toAuditoriaActor((request as AuthenticatedRequest).auth),
       );
 
       response.status(201).json(termo);

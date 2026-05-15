@@ -14,6 +14,7 @@ model Usuario {
   senhaHash String   @map("senha_hash")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  registrosAuditoria RegistroAuditoria[]
 
   @@map("usuarios")
 }
@@ -82,4 +83,27 @@ model TermoVoluntariado {
   voluntario    Voluntario @relation(fields: [voluntarioId], references: [id])
 
   @@map("termos_voluntariado")
+}
+
+model RegistroAuditoria {
+  id             String   @id @default(uuid())
+  usuarioId      Int?     @map("usuario_id")
+  usuarioNome    String?  @map("usuario_nome")
+  usuarioEmail   String?  @map("usuario_email")
+  acao           String
+  entidade       String
+  entidadeId     String   @map("entidade_id")
+  descricao      String
+  dadosAnteriores Json?   @map("dados_anteriores")
+  dadosNovos     Json?    @map("dados_novos")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  usuario        Usuario? @relation(fields: [usuarioId], references: [id])
+
+  @@index([acao])
+  @@index([entidade])
+  @@index([entidadeId])
+  @@index([usuarioId])
+  @@index([createdAt])
+  @@map("registros_auditoria")
 }

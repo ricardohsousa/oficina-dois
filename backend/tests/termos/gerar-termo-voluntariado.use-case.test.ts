@@ -48,6 +48,7 @@ const createHistorico = (): HistoricoAtuacao[] => [
 test('GerarTermoVoluntariadoUseCase gera PDF, salva referencia e retorna metadados', async () => {
   const pdfBuffer = Buffer.from('pdf-content');
   const savedTerms: Array<{ id: string; nomeArquivo: string; caminhoArquivo: string }> = [];
+  const auditEntries: Array<{ acao: string; entidade: string; entidadeId: string }> = [];
   let receivedDescription = '';
 
   const useCase = new GerarTermoVoluntariadoUseCase(
@@ -89,6 +90,19 @@ test('GerarTermoVoluntariadoUseCase gera PDF, salva referencia e retorna metadad
         return `storage/termos/${fileName}`;
       },
       read: async () => Buffer.alloc(0),
+      delete: async () => undefined,
+    },
+    {
+      runInTransaction: async (operation) => operation({ transaction: {} }),
+    },
+    {
+      execute: async (input) => {
+        auditEntries.push({
+          acao: input.acao,
+          entidade: input.entidade,
+          entidadeId: input.entidadeId,
+        });
+      },
     },
   );
 
@@ -99,6 +113,13 @@ test('GerarTermoVoluntariadoUseCase gera PDF, salva referencia e retorna metadad
   assert.equal(result.id, savedTerms[0].id);
   assert.equal(result.voluntarioId, 'vol-1');
   assert.equal(result.mimeType, 'application/pdf');
+  assert.deepEqual(auditEntries, [
+    {
+      acao: 'termo.gerado',
+      entidade: 'termo_voluntariado',
+      entidadeId: result.id,
+    },
+  ]);
   assert.match(
     result.nomeArquivo,
     /^termo-voluntariado-maria-silva-\d{4}-\d{2}-\d{2}-[0-9a-f-]{36}\.pdf$/,
@@ -137,6 +158,13 @@ test('GerarTermoVoluntariadoUseCase gera nomes de arquivo distintos para o mesmo
         return `storage/termos/${fileName}`;
       },
       read: async () => Buffer.alloc(0),
+      delete: async () => undefined,
+    },
+    {
+      runInTransaction: async (operation) => operation({ transaction: {} }),
+    },
+    {
+      execute: async () => undefined,
     },
   );
 
@@ -173,6 +201,13 @@ test('GerarTermoVoluntariadoUseCase retorna 404 quando o voluntario nao existe',
     {
       save: async () => 'storage/termos/x.pdf',
       read: async () => Buffer.alloc(0),
+      delete: async () => undefined,
+    },
+    {
+      runInTransaction: async (operation) => operation({ transaction: {} }),
+    },
+    {
+      execute: async () => undefined,
     },
   );
 
@@ -216,6 +251,13 @@ test('GerarTermoVoluntariadoUseCase valida dados obrigatorios pendentes', async 
     {
       save: async () => 'storage/termos/x.pdf',
       read: async () => Buffer.alloc(0),
+      delete: async () => undefined,
+    },
+    {
+      runInTransaction: async (operation) => operation({ transaction: {} }),
+    },
+    {
+      execute: async () => undefined,
     },
   );
 
