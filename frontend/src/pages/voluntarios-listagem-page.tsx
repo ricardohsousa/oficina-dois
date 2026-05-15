@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 import { VoluntariosEmptyState } from '@/components/voluntarios/voluntarios-empty-state';
 import { VoluntariosFilters } from '@/components/voluntarios/voluntarios-filters';
@@ -46,6 +47,7 @@ function TableSkeleton() {
 }
 
 export function VoluntariosListagemPage() {
+  const navigate = useNavigate();
   const { items, isLoading, isRefreshing, error, defaultFilters, fetchVoluntarios, refetch } =
     useVoluntarios();
   const [filters, setFilters] = useState<VoluntariosFiltersForm>(defaultFilters);
@@ -69,11 +71,17 @@ export function VoluntariosListagemPage() {
   return (
     <main className="min-h-screen bg-slate-50 py-10">
       <div className="container max-w-6xl space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-semibold tracking-tight">Voluntários</h1>
-          <p className="text-sm text-muted-foreground">
-            Consulte os voluntários cadastrados e filtre os registros por nome e status.
-          </p>
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-semibold tracking-tight">Voluntários</h1>
+            <p className="text-sm text-muted-foreground">
+              Consulte os voluntários cadastrados e filtre os registros por nome e status.
+            </p>
+          </div>
+          <Button type="button" onClick={() => navigate('/voluntarios/novo')}>
+            <Plus className="h-4 w-4 mr-1.5" />
+            Novo voluntário
+          </Button>
         </div>
 
         <Card>
@@ -138,7 +146,9 @@ export function VoluntariosListagemPage() {
               <VoluntariosEmptyState hasFilters={hasFiltersApplied} />
             ) : null}
 
-            {!isLoading && items.length > 0 ? <VoluntariosTable items={items} /> : null}
+            {!isLoading && items.length > 0 ? (
+              <VoluntariosTable items={items} onRowClick={(id) => navigate(`/voluntarios/${id}`)} />
+            ) : null}
           </CardContent>
         </Card>
       </div>

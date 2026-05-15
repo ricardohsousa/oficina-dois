@@ -1,3 +1,30 @@
+// ── Criar ──────────────────────────────────────────────────────────────────
+export type CriarVoluntarioDto = {
+  nomeCompleto: string;
+  cpf: string;
+  dataNascimento: string;
+  email: string;
+  telefone: string;
+  endereco: string;
+  dataEntrada: string;
+};
+
+// ── Atualizar ────────────────────────────────────────────────────────────────
+export type AtualizarVoluntarioDto = {
+  nomeCompleto: string;
+  dataNascimento: string;
+  email: string;
+  telefone: string;
+  endereco: string;
+  dataEntrada: string;
+};
+
+// ── Inativar ─────────────────────────────────────────────────────────────────
+export type InativarVoluntarioDto = {
+  dataSaida: string;
+};
+
+// ── Listar ───────────────────────────────────────────────────────────────────
 export type ListarVoluntariosDto = {
   nome?: string;
   ativo?: boolean;
