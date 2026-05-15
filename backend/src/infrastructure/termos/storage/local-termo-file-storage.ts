@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import type { TermoFileStorage } from '../../../application/termos/services/termo-file-storage';
@@ -20,5 +20,11 @@ export class LocalTermoFileStorage implements TermoFileStorage {
     const filePath = path.resolve(this.projectRoot, relativePath);
 
     return readFile(filePath);
+  }
+
+  async delete(relativePath: string): Promise<void> {
+    const filePath = path.resolve(this.projectRoot, relativePath);
+
+    await rm(filePath, { force: true });
   }
 }

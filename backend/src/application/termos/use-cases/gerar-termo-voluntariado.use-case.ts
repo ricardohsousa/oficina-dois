@@ -1,9 +1,12 @@
 import { randomUUID } from 'node:crypto';
 
+import type { RegistrarAuditoriaService } from '../../auditoria/use-cases/registrar-auditoria.service';
+import type { AuditoriaActor } from '../../auditoria/services/auditoria-context';
 import type { AtuacaoRepository } from '../../../domain/atuacoes/repositories/atuacao.repository';
 import type { TermoVoluntariadoRepository } from '../../../domain/termos/repositories/termo-voluntariado.repository';
 import { TermoVoluntariado } from '../../../domain/termos/entities/termo-voluntariado';
 import type { VoluntarioRepository } from '../../../domain/voluntarios/repositories/voluntario.repository';
+import type { TransactionManager } from '../../../shared/database/transaction-manager';
 import { HttpError } from '../../../shared/errors/http-error';
 import { ValidationError } from '../../../shared/errors/validation-error';
 import type { TermoVoluntariadoResponseDto } from '../dtos/termo-voluntariado-response.dto';
@@ -20,9 +23,14 @@ export class GerarTermoVoluntariadoUseCase {
     private readonly termoRepository: TermoVoluntariadoRepository,
     private readonly termoPdfGenerator: TermoPdfGenerator,
     private readonly termoFileStorage: TermoFileStorage,
+    private readonly transactionManager: TransactionManager,
+    private readonly registrarAuditoriaService: RegistrarAuditoriaService,
   ) {}
 
-  async execute(voluntarioId: string): Promise<TermoVoluntariadoResponseDto> {
+  async execute(
+    voluntarioId: string,
+    actor: AuditoriaActor | null = null,
+  ): Promise<TermoVoluntariadoResponseDto> {
     const voluntario = await this.voluntarioRepository.findById(voluntarioId);
 
     if (!voluntario) {
@@ -62,9 +70,28 @@ export class GerarTermoVoluntariadoUseCase {
       caminhoArquivo: path,
     });
 
-    await this.termoRepository.create(termo);
+    try {
+      return await this.transactionManager.runInTransaction(async (context) => {
+        await this.termoRepository.create(termo, context);
+        await this.registrarAuditoriaService.execute(
+          {
+            actor,
+            acao: 'termo.gerado',
+            entidade: 'termo_voluntariado',
+            entidadeId: termo.id,
+            descricao: 'Termo de voluntariado gerado em PDF.',
+            dadosAnteriores: null,
+            dadosNovos: termo.toJSON(),
+          },
+          context,
+        );
 
-    return toTermoVoluntariadoResponseDto(termo);
+        return toTermoVoluntariadoResponseDto(termo);
+      });
+    } catch (error) {
+      await this.termoFileStorage.delete(path);
+      throw error;
+    }
   }
 
   private validateRequiredFields(voluntario: {

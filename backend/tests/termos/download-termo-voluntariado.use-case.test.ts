@@ -29,6 +29,7 @@ test('DownloadTermoVoluntariadoUseCase retorna o arquivo PDF quando o termo exis
         assert.equal(path, 'storage/termos/termo.pdf');
         return buffer;
       },
+      delete: async () => undefined,
     },
   );
 
@@ -48,6 +49,7 @@ test('DownloadTermoVoluntariadoUseCase retorna 404 quando o termo nao existe', a
     {
       save: async () => 'storage/termos/x.pdf',
       read: async () => Buffer.alloc(0),
+      delete: async () => undefined,
     },
   );
 
@@ -73,6 +75,7 @@ test('DownloadTermoVoluntariadoUseCase retorna 404 quando o arquivo nao existe n
       read: async () => {
         throw new Error('arquivo ausente');
       },
+      delete: async () => undefined,
     },
   );
 

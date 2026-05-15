@@ -1,9 +1,12 @@
+import { RegistrarAuditoriaService } from '../../application/auditoria/use-cases/registrar-auditoria.service';
 import type { TokenService } from '../../application/auth/services/token-service';
 import { DownloadTermoVoluntariadoUseCase } from '../../application/termos/use-cases/download-termo-voluntariado.use-case';
 import { GerarTermoVoluntariadoUseCase } from '../../application/termos/use-cases/gerar-termo-voluntariado.use-case';
 import { prismaClient } from '../database/prisma/client';
+import { PrismaTransactionManager } from '../database/prisma/transaction-context';
 import { PuppeteerTermoPdfGenerator } from '../pdf/puppeteer-termo-pdf-generator';
 import { PrismaAtuacaoRepository } from '../atuacoes/repositories/prisma-atuacao.repository';
+import { PrismaRegistroAuditoriaRepository } from '../auditoria/repositories/prisma-registro-auditoria.repository';
 import { PrismaTermoVoluntariadoRepository } from './repositories/prisma-termo-voluntariado.repository';
 import { LocalTermoFileStorage } from './storage/local-termo-file-storage';
 import { PrismaVoluntarioRepository } from '../voluntarios/repositories/prisma-voluntario.repository';
@@ -16,6 +19,9 @@ export const createTermosModule = (tokenService: TokenService) => {
   const termoRepository = new PrismaTermoVoluntariadoRepository(prismaClient);
   const termoPdfGenerator = new PuppeteerTermoPdfGenerator();
   const termoFileStorage = new LocalTermoFileStorage();
+  const transactionManager = new PrismaTransactionManager(prismaClient);
+  const registroAuditoriaRepository = new PrismaRegistroAuditoriaRepository(prismaClient);
+  const registrarAuditoriaService = new RegistrarAuditoriaService(registroAuditoriaRepository);
 
   const gerarTermoVoluntariadoUseCase = new GerarTermoVoluntariadoUseCase(
     voluntarioRepository,
@@ -23,6 +29,8 @@ export const createTermosModule = (tokenService: TokenService) => {
     termoRepository,
     termoPdfGenerator,
     termoFileStorage,
+    transactionManager,
+    registrarAuditoriaService,
   );
   const downloadTermoVoluntariadoUseCase = new DownloadTermoVoluntariadoUseCase(
     termoRepository,

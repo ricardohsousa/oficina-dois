@@ -1,3 +1,4 @@
+import { toAuditoriaActor } from '../../../application/auditoria/services/to-auditoria-actor';
 import type { NextFunction, Request, Response } from 'express';
 
 import type { AtualizarOficinaUseCase } from '../../../application/oficinas/use-cases/atualizar-oficina.use-case';
@@ -9,6 +10,7 @@ import {
   validateCreateOficina,
   validateUpdateOficina,
 } from '../../validations/oficinas-http.validator';
+import type { AuthenticatedRequest } from '../middlewares/authentication.middleware';
 
 export class OficinasController {
   constructor(
@@ -44,7 +46,10 @@ export class OficinasController {
   create = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
     try {
       const input = validateCreateOficina(request.body);
-      const oficina = await this.criarOficinaUseCase.execute(input);
+      const oficina = await this.criarOficinaUseCase.execute(
+        input,
+        toAuditoriaActor((request as AuthenticatedRequest).auth),
+      );
 
       response.status(201).json(oficina);
     } catch (error) {
@@ -58,6 +63,7 @@ export class OficinasController {
       const oficina = await this.atualizarOficinaUseCase.execute(
         String(request.params.id ?? ''),
         input,
+        toAuditoriaActor((request as AuthenticatedRequest).auth),
       );
 
       response.status(200).json(oficina);
@@ -70,6 +76,7 @@ export class OficinasController {
     try {
       const oficina = await this.inativarOficinaUseCase.execute(
         String(request.params.id ?? ''),
+        toAuditoriaActor((request as AuthenticatedRequest).auth),
       );
 
       response.status(200).json(oficina);

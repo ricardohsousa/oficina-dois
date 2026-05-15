@@ -104,6 +104,7 @@ Entre os endpoints documentados, o backend passa a expor também a geração e o
 
 - `POST /voluntarios/{id}/termo`
 - `GET /termos/{id}/download`
+- `GET /auditorias`
 
 ---
 
