@@ -48,3 +48,20 @@ test('ListarRegistrosAuditoriaUseCase retorna registros mapeados e repassa filtr
     },
   ]);
 });
+
+test('ListarRegistrosAuditoriaUseCase usa filtros vazios por padrão e retorna lista vazia', async () => {
+  let receivedFilters: unknown;
+
+  const useCase = new ListarRegistrosAuditoriaUseCase({
+    create: async () => undefined,
+    findMany: async (filters) => {
+      receivedFilters = filters;
+      return [];
+    },
+  });
+
+  const result = await useCase.execute();
+
+  assert.deepEqual(receivedFilters, {});
+  assert.deepEqual(result, []);
+});
