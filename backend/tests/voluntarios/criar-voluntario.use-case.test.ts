@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import { CriarVoluntarioUseCase } from '../../src/application/voluntarios/use-cases/criar-voluntario.use-case';
 import { Voluntario } from '../../src/domain/voluntarios/entities/voluntario';
+import { ConflictError } from '../../src/shared/errors/conflict-error';
 
 test('CriarVoluntarioUseCase cria voluntário e registra auditoria com autor autenticado', async () => {
   const createdVoluntarios: Array<ReturnType<Voluntario['toJSON']>> = [];
@@ -66,4 +67,129 @@ test('CriarVoluntarioUseCase cria voluntário e registra auditoria com autor aut
     usuarioNome: 'Antonio',
     usuarioEmail: 'antonio@example.com',
   });
+});
+
+const createVoluntarioExistente = () =>
+  Voluntario.load({
+    id: 'vol-existente',
+    nomeCompleto: 'João Existente',
+    cpf: '12345678900',
+    dataNascimento: '1990-01-01',
+    email: 'joao@example.com',
+    telefone: '41999990000',
+    endereco: 'Rua X, 1',
+    dataEntrada: '2025-01-01',
+    dataSaida: null,
+    ativo: true,
+    createdAt: '2025-01-01T10:00:00.000Z',
+    updatedAt: '2025-01-01T10:00:00.000Z',
+  });
+
+test('CriarVoluntarioUseCase cria voluntário sem actor autenticado', async () => {
+  const useCase = new CriarVoluntarioUseCase(
+    {
+      create: async () => undefined,
+      findAll: async () => [],
+      findWithFilters: async () => [],
+      findById: async () => null,
+      findByCpf: async () => null,
+      findByEmail: async () => null,
+      update: async () => undefined,
+    },
+    {
+      runInTransaction: async (operation) => operation({ transaction: {} }),
+    },
+    {
+      execute: async () => undefined,
+    },
+  );
+
+  const result = await useCase.execute({
+    nomeCompleto: 'Maria Silva',
+    cpf: '12345678900',
+    dataNascimento: '1995-06-15',
+    email: 'maria@example.com',
+    telefone: '41999990000',
+    endereco: 'Rua A, 123',
+    dataEntrada: '2026-01-10',
+  });
+
+  assert.equal(result.nomeCompleto, 'Maria Silva');
+  assert.equal(result.ativo, true);
+});
+
+test('CriarVoluntarioUseCase lança ConflictError quando CPF já está cadastrado', async () => {
+  const useCase = new CriarVoluntarioUseCase(
+    {
+      create: async () => undefined,
+      findAll: async () => [],
+      findWithFilters: async () => [],
+      findById: async () => null,
+      findByCpf: async () => createVoluntarioExistente(),
+      findByEmail: async () => null,
+      update: async () => undefined,
+    },
+    {
+      runInTransaction: async (operation) => operation({ transaction: {} }),
+    },
+    {
+      execute: async () => undefined,
+    },
+  );
+
+  await assert.rejects(
+    () =>
+      useCase.execute({
+        nomeCompleto: 'Maria Silva',
+        cpf: '123.456.789-00',
+        dataNascimento: '1995-06-15',
+        email: 'maria@example.com',
+        telefone: '41999990000',
+        endereco: 'Rua A, 123',
+        dataEntrada: '2026-01-10',
+      }),
+    (err) => {
+      assert.ok(err instanceof ConflictError);
+      assert.equal(err.status, 409);
+      return true;
+    },
+  );
+});
+
+test('CriarVoluntarioUseCase lança ConflictError quando e-mail já está cadastrado', async () => {
+  const useCase = new CriarVoluntarioUseCase(
+    {
+      create: async () => undefined,
+      findAll: async () => [],
+      findWithFilters: async () => [],
+      findById: async () => null,
+      findByCpf: async () => null,
+      findByEmail: async () => createVoluntarioExistente(),
+      update: async () => undefined,
+    },
+    {
+      runInTransaction: async (operation) => operation({ transaction: {} }),
+    },
+    {
+      execute: async () => undefined,
+    },
+  );
+
+  await assert.rejects(
+    () =>
+      useCase.execute({
+        nomeCompleto: 'Maria Silva',
+        cpf: '123.456.789-00',
+        dataNascimento: '1995-06-15',
+        email: 'maria@example.com',
+        telefone: '41999990000',
+        endereco: 'Rua A, 123',
+        dataEntrada: '2026-01-10',
+      }),
+    (err) => {
+      assert.ok(err instanceof ConflictError);
+      assert.equal(err.status, 409);
+      return true;
+    },
+  );
 });

@@ -19,7 +19,7 @@ O sistema permite cadastrar voluntários, registrar sua atuação em oficinas, p
 | Geração de PDF | Puppeteer |
 | Hash de senha | bcrypt |
 | Documentação da API | Swagger/OpenAPI |
-| Testes backend | Vitest + Supertest |
+| Testes backend | node:test + tsx |
 | Testes frontend | Vitest + React Testing Library |
 | Testes E2E | Playwright |
 
@@ -119,6 +119,41 @@ Entre os endpoints documentados, o backend passa a expor também a geração e o
 
 ---
 
+## Testes
+
+O backend utiliza o runner nativo do Node.js (`node:test`) com TypeScript via `tsx`. Os testes são unitários com mocks inline — sem dependências externas de test framework.
+
+### Estrutura
+
+```
+backend/tests/
+├── atuacoes/        # Testes de vinculação voluntário-oficina
+├── auditoria/       # Testes do módulo de auditoria
+├── oficinas/        # Testes de criação, atualização e inativação de oficinas
+├── termos/          # Testes de geração e download do termo PDF
+└── voluntarios/     # Testes de cadastro, edição e inativação de voluntários
+```
+
+### Comandos
+
+Execute no diretório `backend/`:
+
+```bash
+# Rodar todos os testes
+npm test
+
+# Rodar testes com relatório de cobertura
+npm run test:coverage
+```
+
+### Meta de cobertura
+
+| Camada | Meta mínima |
+|--------|------------|
+| `domain` e `application` | 80% |
+| Backend global | 70% |
+
+---
 
 ## Equipe
 
