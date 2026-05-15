@@ -1,16 +1,21 @@
+import { HttpError } from '../../../shared/errors/http-error';
 import type { VoluntarioResponseDto } from '../dtos/voluntario-response.dto';
 import { toVoluntarioResponseDto } from './voluntario-presenter';
 import type { VoluntarioRepository } from '../../../domain/voluntarios/repositories/voluntario.repository';
-import { NotFoundError } from '../../../shared/errors/not-found-error';
 
-export class ObterVoluntarioUseCase {
+export class BuscarVoluntarioPorIdUseCase {
   constructor(private readonly voluntarioRepository: VoluntarioRepository) {}
 
   async execute(id: string): Promise<VoluntarioResponseDto> {
     const voluntario = await this.voluntarioRepository.findById(id);
 
     if (!voluntario) {
-      throw new NotFoundError('Voluntário não encontrado.');
+      throw new HttpError({
+        status: 404,
+        title: 'Recurso não encontrado',
+        detail: 'Voluntário não encontrado.',
+        type: 'https://ellp.local/errors/not-found',
+      });
     }
 
     return toVoluntarioResponseDto(voluntario);

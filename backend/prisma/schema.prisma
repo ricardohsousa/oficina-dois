@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id        Int      @id @default(autoincrement())
+  nome      String
+  email     String   @unique
+  senhaHash String   @map("senha_hash")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  registrosAuditoria RegistroAuditoria[]
+
+  @@map("usuarios")
+}
+
+model Oficina {
+  id          String    @id @default(uuid())
+  nome        String
+  descricao   String
+  status      String    @default("ativa")
+  dataInicio  DateTime  @map("data_inicio")
+  dataFim     DateTime? @map("data_fim")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  atuacoes    Atuacao[]
+
+  @@map("oficinas")
+}
+
+model Voluntario {
+  id             String    @id @default(uuid())
+  nomeCompleto   String    @map("nome_completo")
+  cpf            String    @unique
+  dataNascimento DateTime  @map("data_nascimento")
+  email          String    @unique
+  telefone       String
+  endereco       String
+  dataEntrada    DateTime  @map("data_entrada")
+  dataSaida      DateTime? @map("data_saida")
+  ativo          Boolean   @default(true)
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  atuacoes       Atuacao[]
+  termos         TermoVoluntariado[]
+
+  @@map("voluntarios")
+}
+
+model Atuacao {
+  id           String    @id @default(uuid())
+  voluntarioId String    @map("voluntario_id")
+  oficinaId    String    @map("oficina_id")
+  dataInicio   DateTime  @map("data_inicio")
+  dataFim      DateTime? @map("data_fim")
+  cargaHoraria Int?      @map("carga_horaria")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  voluntario   Voluntario @relation(fields: [voluntarioId], references: [id])
+  oficina      Oficina    @relation(fields: [oficinaId], references: [id])
+
+  @@unique([voluntarioId, oficinaId])
+  @@map("atuacoes")
+}
+
+model TermoVoluntariado {
+  id            String     @id @default(uuid())
+  voluntarioId  String     @map("voluntario_id")
+  nomeArquivo   String     @map("nome_arquivo")
+  caminhoArquivo String    @map("caminho_arquivo")
+  mimeType      String     @default("application/pdf") @map("mime_type")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+
+  voluntario    Voluntario @relation(fields: [voluntarioId], references: [id])
+
+  @@map("termos_voluntariado")
+}
+
+model RegistroAuditoria {
+  id             String   @id @default(uuid())
+  usuarioId      Int?     @map("usuario_id")
+  usuarioNome    String?  @map("usuario_nome")
+  usuarioEmail   String?  @map("usuario_email")
+  acao           String
+  entidade       String
+  entidadeId     String   @map("entidade_id")
+  descricao      String
+  dadosAnteriores Json?   @map("dados_anteriores")
+  dadosNovos     Json?    @map("dados_novos")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  usuario        Usuario? @relation(fields: [usuarioId], references: [id])
+
+  @@index([acao])
+  @@index([entidade])
+  @@index([entidadeId])
+  @@index([usuarioId])
+  @@index([createdAt])
+  @@map("registros_auditoria")
+}

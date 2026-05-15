@@ -1,42 +1,30 @@
+import { toAuditoriaActor } from '../../../application/auditoria/services/to-auditoria-actor';
 import type { NextFunction, Request, Response } from 'express';
 
 import type { AtualizarVoluntarioUseCase } from '../../../application/voluntarios/use-cases/atualizar-voluntario.use-case';
+import type { BuscarVoluntarioPorIdUseCase } from '../../../application/voluntarios/use-cases/buscar-voluntario-por-id.use-case';
 import type { CriarVoluntarioUseCase } from '../../../application/voluntarios/use-cases/criar-voluntario.use-case';
 import type { InativarVoluntarioUseCase } from '../../../application/voluntarios/use-cases/inativar-voluntario.use-case';
 import type { ListarVoluntariosUseCase } from '../../../application/voluntarios/use-cases/listar-voluntarios.use-case';
-import type { ObterVoluntarioUseCase } from '../../../application/voluntarios/use-cases/obter-voluntario.use-case';
 import {
-  parseListarVoluntariosQuery,
-  parseRequiredId,
+  parseVoluntarioFilters,
   validateCreateVoluntario,
-  validateInativarVoluntario,
-  validateUpdateVoluntario
 } from '../../validations/voluntarios-http.validator';
+import type { AuthenticatedRequest } from '../middlewares/authentication.middleware';
 
 export class VoluntariosController {
   constructor(
     private readonly criarVoluntarioUseCase: CriarVoluntarioUseCase,
-    private readonly listarVoluntariosUseCase: ListarVoluntariosUseCase,
-    private readonly obterVoluntarioUseCase: ObterVoluntarioUseCase,
     private readonly atualizarVoluntarioUseCase: AtualizarVoluntarioUseCase,
-    private readonly inativarVoluntarioUseCase: InativarVoluntarioUseCase
+    private readonly inativarVoluntarioUseCase: InativarVoluntarioUseCase,
+    private readonly listarVoluntariosUseCase: ListarVoluntariosUseCase,
+    private readonly buscarVoluntarioPorIdUseCase: BuscarVoluntarioPorIdUseCase,
   ) {}
-
-  create = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
-    try {
-      const input = validateCreateVoluntario(request.body);
-      const voluntario = await this.criarVoluntarioUseCase.execute(input);
-
-      response.status(201).json(voluntario);
-    } catch (error) {
-      next(error);
-    }
-  };
 
   list = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
     try {
-      const query = parseListarVoluntariosQuery(request.query);
-      const voluntarios = await this.listarVoluntariosUseCase.execute(query);
+      const filters = parseVoluntarioFilters(request.query as Record<string, unknown>);
+      const voluntarios = await this.listarVoluntariosUseCase.execute(filters);
 
       response.status(200).json(voluntarios);
     } catch (error) {
@@ -46,10 +34,25 @@ export class VoluntariosController {
 
   getById = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
     try {
-      const id = parseRequiredId(request.params.id);
-      const voluntario = await this.obterVoluntarioUseCase.execute(id);
+      const voluntario = await this.buscarVoluntarioPorIdUseCase.execute(
+        String(request.params.id ?? ''),
+      );
 
       response.status(200).json(voluntario);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  create = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
+    try {
+      const input = validateCreateVoluntario(request.body);
+      const voluntario = await this.criarVoluntarioUseCase.execute(
+        input,
+        toAuditoriaActor((request as AuthenticatedRequest).auth),
+      );
+
+      response.status(201).json(voluntario);
     } catch (error) {
       next(error);
     }
@@ -57,9 +60,12 @@ export class VoluntariosController {
 
   update = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
     try {
-      const id = parseRequiredId(request.params.id);
-      const input = validateUpdateVoluntario(request.body);
-      const voluntario = await this.atualizarVoluntarioUseCase.execute(id, input);
+      const input = validateCreateVoluntario(request.body);
+      const voluntario = await this.atualizarVoluntarioUseCase.execute(
+        String(request.params.id ?? ''),
+        input,
+        toAuditoriaActor((request as AuthenticatedRequest).auth),
+      );
 
       response.status(200).json(voluntario);
     } catch (error) {
@@ -67,15 +73,12 @@ export class VoluntariosController {
     }
   };
 
-  inactivate = async (
-    request: Request,
-    response: Response,
-    next: NextFunction
-  ): Promise<void> => {
+  inativar = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
     try {
-      const id = parseRequiredId(request.params.id);
-      const input = validateInativarVoluntario(request.body);
-      const voluntario = await this.inativarVoluntarioUseCase.execute(id, input);
+      const voluntario = await this.inativarVoluntarioUseCase.execute(
+        String(request.params.id ?? ''),
+        toAuditoriaActor((request as AuthenticatedRequest).auth),
+      );
 
       response.status(200).json(voluntario);
     } catch (error) {

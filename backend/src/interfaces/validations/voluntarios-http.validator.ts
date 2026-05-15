@@ -1,9 +1,5 @@
-import type { ParsedQs } from 'qs';
-
-import type { AtualizarVoluntarioDto } from '../../application/voluntarios/dtos/atualizar-voluntario.dto';
 import type { CriarVoluntarioDto } from '../../application/voluntarios/dtos/criar-voluntario.dto';
-import type { InativarVoluntarioDto } from '../../application/voluntarios/dtos/inativar-voluntario.dto';
-import type { ListarVoluntariosDto } from '../../application/voluntarios/dtos/listar-voluntarios.dto';
+import type { FiltrarVoluntariosDto } from '../../application/voluntarios/dtos/filtrar-voluntarios.dto';
 import { ValidationError } from '../../shared/errors/validation-error';
 
 const validationDetail = 'Um ou mais campos enviados são inválidos.';
@@ -47,6 +43,30 @@ const ensureBodyObject = (body: unknown): Record<string, unknown> => {
   return body;
 };
 
+export const parseVoluntarioFilters = (query: Record<string, unknown>): FiltrarVoluntariosDto => {
+  const filters: FiltrarVoluntariosDto = {};
+
+  if (typeof query.nome === 'string' && query.nome.trim()) {
+    filters.nome = query.nome.trim();
+  }
+
+  if (typeof query.cpf === 'string' && query.cpf.trim()) {
+    filters.cpf = query.cpf.replace(/\D/g, '');
+  }
+
+  if (typeof query.email === 'string' && query.email.trim()) {
+    filters.email = query.email.trim().toLowerCase();
+  }
+
+  if (query.ativo === 'true') {
+    filters.ativo = true;
+  } else if (query.ativo === 'false') {
+    filters.ativo = false;
+  }
+
+  return filters;
+};
+
 export const validateCreateVoluntario = (body: unknown): CriarVoluntarioDto => {
   const payload = ensureBodyObject(body);
 
@@ -60,58 +80,3 @@ export const validateCreateVoluntario = (body: unknown): CriarVoluntarioDto => {
     dataEntrada: ensureIsoDate(payload.dataEntrada, 'dataEntrada')
   };
 };
-
-export const validateUpdateVoluntario = (body: unknown): AtualizarVoluntarioDto => {
-  const payload = ensureBodyObject(body);
-
-  if ('cpf' in payload) {
-    throw new ValidationError(validationDetail, [
-      { field: 'cpf', message: 'CPF não pode ser alterado nesta operação.' }
-    ]);
-  }
-
-  return {
-    nomeCompleto: ensureString(payload.nomeCompleto, 'nomeCompleto'),
-    dataNascimento: ensureIsoDate(payload.dataNascimento, 'dataNascimento'),
-    email: ensureString(payload.email, 'email'),
-    telefone: ensureString(payload.telefone, 'telefone'),
-    endereco: ensureString(payload.endereco, 'endereco'),
-    dataEntrada: ensureIsoDate(payload.dataEntrada, 'dataEntrada')
-  };
-};
-
-export const validateInativarVoluntario = (body: unknown): InativarVoluntarioDto => {
-  const payload = ensureBodyObject(body);
-
-  return {
-    dataSaida: ensureIsoDate(payload.dataSaida, 'dataSaida')
-  };
-};
-
-export const parseListarVoluntariosQuery = (query: ParsedQs): ListarVoluntariosDto => {
-  const nome = query.nome;
-  const ativo = query.ativo;
-
-  if (nome !== undefined && typeof nome !== 'string') {
-    throw new ValidationError(validationDetail, [
-      { field: 'nome', message: 'Filtro nome deve ser uma string.' }
-    ]);
-  }
-
-  if (ativo === undefined) {
-    return nome?.trim() ? { nome: nome.trim() } : {};
-  }
-
-  if (typeof ativo !== 'string' || !['true', 'false'].includes(ativo)) {
-    throw new ValidationError(validationDetail, [
-      { field: 'ativo', message: 'Filtro ativo deve ser true ou false.' }
-    ]);
-  }
-
-  return {
-    ...(nome?.trim() ? { nome: nome.trim() } : {}),
-    ativo: ativo === 'true'
-  };
-};
-
-export const parseRequiredId = (value: unknown): string => ensureString(value, 'id');
