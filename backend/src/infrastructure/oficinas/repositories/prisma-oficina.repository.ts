@@ -2,6 +2,8 @@ import { PrismaClient } from '@prisma/client';
 
 import { Oficina, type OficinaStatus } from '../../../domain/oficinas/entities/oficina';
 import type { OficinaRepository } from '../../../domain/oficinas/repositories/oficina.repository';
+import type { TransactionContext } from '../../../shared/database/transaction-manager';
+import { resolvePrismaClient } from '../../database/prisma/transaction-context';
 
 export class PrismaOficinaRepository implements OficinaRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -28,8 +30,10 @@ export class PrismaOficinaRepository implements OficinaRepository {
     });
   }
 
-  async create(oficina: Oficina): Promise<void> {
-    await this.prisma.oficina.create({
+  async create(oficina: Oficina, context?: TransactionContext): Promise<void> {
+    const prisma = resolvePrismaClient(this.prisma, context);
+
+    await prisma.oficina.create({
       data: {
         id: oficina.id,
         nome: oficina.nome,
@@ -51,16 +55,19 @@ export class PrismaOficinaRepository implements OficinaRepository {
     return data.map((item) => this.mapToDomain(item));
   }
 
-  async findById(id: string): Promise<Oficina | null> {
-    const data = await this.prisma.oficina.findUnique({ where: { id } });
+  async findById(id: string, context?: TransactionContext): Promise<Oficina | null> {
+    const prisma = resolvePrismaClient(this.prisma, context);
+    const data = await prisma.oficina.findUnique({ where: { id } });
 
     if (!data) return null;
 
     return this.mapToDomain(data);
   }
 
-  async update(oficina: Oficina): Promise<void> {
-    await this.prisma.oficina.update({
+  async update(oficina: Oficina, context?: TransactionContext): Promise<void> {
+    const prisma = resolvePrismaClient(this.prisma, context);
+
+    await prisma.oficina.update({
       where: { id: oficina.id },
       data: {
         nome: oficina.nome,

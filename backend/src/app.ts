@@ -1,3 +1,4 @@
+import { createAuditoriaModule } from './infrastructure/auditoria/auditoria.module';
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
 
@@ -28,6 +29,7 @@ export const createApp = ({ jwtSecret }: CreateAppInput) => {
   app.use(createOficinasModule(tokenService));
   app.use(createAtuacoesModule(tokenService));
   app.use(createTermosModule(tokenService));
+  app.use(createAuditoriaModule(tokenService));
 
   app.use(notFoundHandler);
   app.use(errorHandler);

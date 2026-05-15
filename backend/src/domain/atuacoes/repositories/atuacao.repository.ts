@@ -1,5 +1,6 @@
 import type { Atuacao } from '../entities/atuacao';
 import type { OficinaStatus } from '../../oficinas/entities/oficina';
+import type { TransactionContext } from '../../../shared/database/transaction-manager';
 
 export type HistoricoAtuacao = {
   id: string;
@@ -21,9 +22,20 @@ export type HistoricoAtuacao = {
 };
 
 export interface AtuacaoRepository {
-  create(atuacao: Atuacao): Promise<void>;
-  findByVoluntario(voluntarioId: string): Promise<Atuacao[]>;
-  findHistoricoByVoluntario(voluntarioId: string): Promise<HistoricoAtuacao[]>;
-  findByVoluntarioAndOficina(voluntarioId: string, oficinaId: string): Promise<Atuacao | null>;
-  reconcileForVoluntarioInactivation(voluntarioId: string, dataSaida: string): Promise<void>;
+  create(atuacao: Atuacao, context?: TransactionContext): Promise<void>;
+  findByVoluntario(voluntarioId: string, context?: TransactionContext): Promise<Atuacao[]>;
+  findHistoricoByVoluntario(
+    voluntarioId: string,
+    context?: TransactionContext,
+  ): Promise<HistoricoAtuacao[]>;
+  findByVoluntarioAndOficina(
+    voluntarioId: string,
+    oficinaId: string,
+    context?: TransactionContext,
+  ): Promise<Atuacao | null>;
+  reconcileForVoluntarioInactivation(
+    voluntarioId: string,
+    dataSaida: string,
+    context?: TransactionContext,
+  ): Promise<void>;
 }
