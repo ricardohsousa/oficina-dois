@@ -99,3 +99,52 @@ test('AuditoriaController.list encaminha erro de validação para usuarioId inv�
   assert.ok(nextCalls[0] instanceof HttpError);
   assert.equal((nextCalls[0] as HttpError).status, 400);
 });
+
+test('AuditoriaController.list responde 200 sem usuarioId na query', async () => {
+  let receivedFilters: unknown;
+
+  const controller = new AuditoriaController({
+    execute: async (filters) => {
+      receivedFilters = filters;
+      return [];
+    },
+  });
+
+  const request = { query: { entidade: 'voluntario' } };
+  const response = createResponse();
+  const nextCalls: unknown[] = [];
+
+  await controller.list(request as never, response as never, (error?: unknown) => {
+    if (error !== undefined) nextCalls.push(error);
+  });
+
+  assert.deepEqual(receivedFilters, {
+    acao: undefined,
+    entidade: 'voluntario',
+    entidadeId: undefined,
+    usuarioId: undefined,
+  });
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(nextCalls, []);
+});
+
+test('AuditoriaController.list encaminha erro do use case para o next middleware', async () => {
+  const expectedError = new Error('falha ao listar');
+
+  const controller = new AuditoriaController({
+    execute: async () => {
+      throw expectedError;
+    },
+  });
+
+  const request = { query: {} };
+  const response = createResponse();
+  const nextCalls: unknown[] = [];
+
+  await controller.list(request as never, response as never, (error?: unknown) => {
+    nextCalls.push(error);
+  });
+
+  assert.equal(response.statusCode, 0);
+  assert.deepEqual(nextCalls, [expectedError]);
+});
