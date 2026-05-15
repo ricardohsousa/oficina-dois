@@ -1,5 +1,4 @@
 import type { NextFunction, Request, Response } from 'express';
-
 import { AppError, type AppErrorField } from '../../../shared/errors/app-error';
 
 type ProblemDetails = {
@@ -28,23 +27,14 @@ const createProblemDetails = (
 });
 
 export const errorHandler = (
-  error: Error & { status?: number; type?: string },
+  error: Error,
   request: Request,
   response: Response,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _next: NextFunction
 ): void => {
-  if (error.type === 'entity.parse.failed') {
-    response.status(400).json(
-      createProblemDetails(
-        request,
-        400,
-        'Erro de validação',
-        'O corpo da requisição contém JSON inválido.',
-        'https://ellp.local/errors/validation-error'
-      )
-    );
-    return;
-  }
+  // eslint-disable-next-line no-console
+  console.error(error);
 
   if (error instanceof AppError) {
     response.status(error.status).json(
@@ -65,7 +55,7 @@ export const errorHandler = (
       request,
       500,
       'Erro interno',
-      'Ocorreu um erro inesperado ao processar a requisição.',
+      'Ocorreu um erro inesperado. Tente novamente mais tarde.',
       'https://ellp.local/errors/internal-server-error'
     )
   );
