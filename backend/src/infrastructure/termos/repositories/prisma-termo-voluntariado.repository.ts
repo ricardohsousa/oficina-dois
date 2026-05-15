@@ -2,12 +2,16 @@ import { PrismaClient } from '@prisma/client';
 
 import { TermoVoluntariado } from '../../../domain/termos/entities/termo-voluntariado';
 import type { TermoVoluntariadoRepository } from '../../../domain/termos/repositories/termo-voluntariado.repository';
+import type { TransactionContext } from '../../../shared/database/transaction-manager';
+import { resolvePrismaClient } from '../../database/prisma/transaction-context';
 
 export class PrismaTermoVoluntariadoRepository implements TermoVoluntariadoRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  async create(termo: TermoVoluntariado): Promise<void> {
-    await this.prisma.termoVoluntariado.create({
+  async create(termo: TermoVoluntariado, context?: TransactionContext): Promise<void> {
+    const prisma = resolvePrismaClient(this.prisma, context);
+
+    await prisma.termoVoluntariado.create({
       data: {
         id: termo.id,
         voluntarioId: termo.voluntarioId,
@@ -20,8 +24,9 @@ export class PrismaTermoVoluntariadoRepository implements TermoVoluntariadoRepos
     });
   }
 
-  async findById(id: string): Promise<TermoVoluntariado | null> {
-    const data = await this.prisma.termoVoluntariado.findUnique({
+  async findById(id: string, context?: TransactionContext): Promise<TermoVoluntariado | null> {
+    const prisma = resolvePrismaClient(this.prisma, context);
+    const data = await prisma.termoVoluntariado.findUnique({
       where: { id },
     });
 

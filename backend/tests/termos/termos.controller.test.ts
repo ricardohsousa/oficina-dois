@@ -40,8 +40,9 @@ test('TermosController.gerar responde 201 com os metadados do termo', async () =
 
   const controller = new TermosController(
     {
-      execute: async (voluntarioId: string) => {
+      execute: async (voluntarioId: string, actor?: { usuarioId: number | null }) => {
         assert.equal(voluntarioId, 'vol-1');
+        assert.equal(actor?.usuarioId, 1);
         return termo;
       },
     },
@@ -55,7 +56,10 @@ test('TermosController.gerar responde 201 com os metadados do termo', async () =
   const response = createResponse();
 
   await controller.gerar(
-    { params: { voluntarioId: 'vol-1' } } as never,
+    {
+      params: { voluntarioId: 'vol-1' },
+      auth: { sub: '1', nome: 'Usuario Teste', email: 'teste@ellp.local' },
+    } as never,
     response as never,
     () => undefined,
   );

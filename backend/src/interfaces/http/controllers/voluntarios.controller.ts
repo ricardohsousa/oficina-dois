@@ -1,3 +1,4 @@
+import { toAuditoriaActor } from '../../../application/auditoria/services/to-auditoria-actor';
 import type { NextFunction, Request, Response } from 'express';
 
 import type { AtualizarVoluntarioUseCase } from '../../../application/voluntarios/use-cases/atualizar-voluntario.use-case';
@@ -9,6 +10,7 @@ import {
   parseVoluntarioFilters,
   validateCreateVoluntario,
 } from '../../validations/voluntarios-http.validator';
+import type { AuthenticatedRequest } from '../middlewares/authentication.middleware';
 
 export class VoluntariosController {
   constructor(
@@ -45,7 +47,10 @@ export class VoluntariosController {
   create = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
     try {
       const input = validateCreateVoluntario(request.body);
-      const voluntario = await this.criarVoluntarioUseCase.execute(input);
+      const voluntario = await this.criarVoluntarioUseCase.execute(
+        input,
+        toAuditoriaActor((request as AuthenticatedRequest).auth),
+      );
 
       response.status(201).json(voluntario);
     } catch (error) {
@@ -59,6 +64,7 @@ export class VoluntariosController {
       const voluntario = await this.atualizarVoluntarioUseCase.execute(
         String(request.params.id ?? ''),
         input,
+        toAuditoriaActor((request as AuthenticatedRequest).auth),
       );
 
       response.status(200).json(voluntario);
@@ -69,7 +75,10 @@ export class VoluntariosController {
 
   inativar = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
     try {
-      const voluntario = await this.inativarVoluntarioUseCase.execute(String(request.params.id ?? ''));
+      const voluntario = await this.inativarVoluntarioUseCase.execute(
+        String(request.params.id ?? ''),
+        toAuditoriaActor((request as AuthenticatedRequest).auth),
+      );
 
       response.status(200).json(voluntario);
     } catch (error) {
