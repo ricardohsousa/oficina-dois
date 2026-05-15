@@ -1,12 +1,3 @@
-# Claude Code
-.claude/
-CLAUDE.md
-
-# BMAD Method
-_bmad/
-_bmad-output/
-.agents/skills/
-
 # Dependências
 node_modules/
 
