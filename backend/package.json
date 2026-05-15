@@ -7,15 +7,33 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsx watch src/server.ts",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:repair-migrations": "node scripts/repair-prisma-migration-checksums.mjs",
     "prestart": "npm run build",
-    "start": "node dist/server.js"
+    "prisma:studio": "prisma studio",
+    "start": "node dist/server.js",
+    "test": "node --import tsx --test tests/**/*.test.ts",
+    "test:coverage": "node --import tsx --test --experimental-test-coverage tests/**/*.test.ts"
   },
   "dependencies": {
-    "express": "^5.1.0"
+    "@prisma/client": "^6.7.0",
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "puppeteer": "^24.43.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.7.0",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
+    "prisma": "^6.7.0",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3"
   }

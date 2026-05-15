@@ -19,7 +19,7 @@ O sistema permite cadastrar voluntários, registrar sua atuação em oficinas, p
 | Geração de PDF | Puppeteer |
 | Hash de senha | bcrypt |
 | Documentação da API | Swagger/OpenAPI |
-| Testes backend | Vitest + Supertest |
+| Testes backend | node:test + tsx |
 | Testes frontend | Vitest + React Testing Library |
 | Testes E2E | Playwright |
 
@@ -90,6 +90,68 @@ O sistema permite cadastrar voluntários, registrar sua atuação em oficinas, p
 ## Como Executar
 
 > Instruções de instalação e execução serão adicionadas após a configuração do ambiente.
+
+### Reparar histórico local do Prisma
+
+Se `npm run db:migrate` falhar com erro de `shadow database` nas migrations antigas, execute no diretório `backend`:
+
+```bash
+npm run db:repair-migrations
+npm run db:migrate
+```
+
+O primeiro comando atualiza os checksums das migrations legadas em `_prisma_migrations` no banco local para mantê-las compatíveis com a versão corrigida do repositório.
+
+### Documentação da API
+
+A documentação da API é gerada automaticamente usando Swagger/OpenAPI. Para visualizá-la, siga os passos:
+
+1. Inicie a aplicação backend.
+2. Acesse a seguinte URL no seu navegador:
+
+[http://localhost:3000/api-docs](http://localhost:3000/api-docs)
+
+Entre os endpoints documentados, o backend passa a expor também a geração e o download do termo de voluntariado em PDF:
+
+- `POST /voluntarios/{id}/termo`
+- `GET /termos/{id}/download`
+- `GET /auditorias`
+
+---
+
+## Testes
+
+O backend utiliza o runner nativo do Node.js (`node:test`) com TypeScript via `tsx`. Os testes são unitários com mocks inline — sem dependências externas de test framework.
+
+### Estrutura
+
+```
+backend/tests/
+├── atuacoes/        # Testes de vinculação voluntário-oficina
+├── auditoria/       # Testes do módulo de auditoria
+├── oficinas/        # Testes de criação, atualização e inativação de oficinas
+├── termos/          # Testes de geração e download do termo PDF
+└── voluntarios/     # Testes de cadastro, edição e inativação de voluntários
+```
+
+### Comandos
+
+Execute no diretório `backend/`:
+
+```bash
+# Rodar todos os testes
+npm test
+
+# Rodar testes com relatório de cobertura
+npm run test:coverage
+```
+
+### Meta de cobertura
+
+| Camada | Meta mínima |
+|--------|------------|
+| `domain` e `application` | 80% |
+| Backend global | 70% |
 
 ---
 

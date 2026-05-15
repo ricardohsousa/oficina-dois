@@ -12,15 +12,6 @@ export type CriarVoluntarioProps = {
   dataEntrada: string;
 };
 
-export type AtualizarVoluntarioProps = {
-  nomeCompleto: string;
-  dataNascimento: string;
-  email: string;
-  telefone: string;
-  endereco: string;
-  dataEntrada: string;
-};
-
 export type VoluntarioProps = {
   id: string;
   nomeCompleto: string;
@@ -56,6 +47,10 @@ export class Voluntario {
       createdAt: now,
       updatedAt: now
     });
+  }
+
+  static load(props: VoluntarioProps): Voluntario {
+    return new Voluntario(props);
   }
 
   static normalizeCpf(value: string): string {
@@ -112,28 +107,6 @@ export class Voluntario {
 
   get updatedAt(): string {
     return this.props.updatedAt;
-  }
-
-  atualizar(input: AtualizarVoluntarioProps): void {
-    this.props = {
-      ...this.props,
-      nomeCompleto: Voluntario.requireText(input.nomeCompleto, 'nomeCompleto'),
-      dataNascimento: Voluntario.requireText(input.dataNascimento, 'dataNascimento'),
-      email: Voluntario.requireEmail(input.email),
-      telefone: Voluntario.requireText(input.telefone, 'telefone'),
-      endereco: Voluntario.requireText(input.endereco, 'endereco'),
-      dataEntrada: Voluntario.requireText(input.dataEntrada, 'dataEntrada'),
-      updatedAt: new Date().toISOString()
-    };
-  }
-
-  inativar(dataSaida: string): void {
-    this.props = {
-      ...this.props,
-      ativo: false,
-      dataSaida: Voluntario.requireText(dataSaida, 'dataSaida'),
-      updatedAt: new Date().toISOString()
-    };
   }
 
   toJSON(): VoluntarioProps {
