@@ -12,17 +12,18 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/health': 'http://localhost:3000',
-      '/voluntarios': {
+      '/api': {
         target: 'http://localhost:3000',
         changeOrigin: true,
-        bypass(req) {
-          // Deixa o Vite lidar com navegação do browser (HTML); só proxia fetch/XHR (JSON)
-          const accept = req.headers['accept'] ?? '';
-          if (accept.includes('text/html')) {
-            return req.url ?? '/';
-          }
-        }
+        rewrite: (path) => path.replace(/^\/api/, '')
+      },
+      '/health': {
+        target: 'http://localhost:3000',
+        changeOrigin: true
+      },
+      '/api-docs': {
+        target: 'http://localhost:3000',
+        changeOrigin: true
       }
     }
   }

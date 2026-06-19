@@ -2,8 +2,8 @@ import { http } from '@/lib/http';
 
 import type {
   ListarVoluntariosDto,
-  ListarVoluntariosResponseDto,
   StatusFiltroVoluntario,
+  VoluntarioResponseDto,
   VoluntariosFiltersForm
 } from './types';
 
@@ -33,7 +33,7 @@ export const toListarVoluntariosDto = (
 
 export async function listarVoluntarios(
   filters: ListarVoluntariosDto = {}
-): Promise<ListarVoluntariosResponseDto> {
+): Promise<VoluntarioResponseDto[]> {
   const searchParams = new URLSearchParams();
 
   if (filters.nome) {
@@ -47,7 +47,7 @@ export async function listarVoluntarios(
   const queryString = searchParams.toString();
   const url = queryString ? `/voluntarios?${queryString}` : '/voluntarios';
 
-  return http<ListarVoluntariosResponseDto>(url, {
+  return http<VoluntarioResponseDto[]>(url, {
     method: 'GET'
   });
 }
