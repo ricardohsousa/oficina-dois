@@ -45,10 +45,6 @@ export type VoluntarioResponseDto = {
   updatedAt: string;
 };
 
-export type ListarVoluntariosResponseDto = {
-  items: VoluntarioResponseDto[];
-};
-
 export type StatusFiltroVoluntario = 'todos' | 'ativos' | 'inativos';
 
 export type VoluntariosFiltersForm = {

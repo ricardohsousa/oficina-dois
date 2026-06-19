@@ -34,7 +34,7 @@ export function useVoluntarios() {
 
       try {
         const response = await listarVoluntarios(filters);
-        setItems(response.items);
+        setItems(response);
         setAppliedFilters(filters);
       } catch (caughtError) {
         setError(caughtError instanceof ApiError ? caughtError : new ApiError(0));
