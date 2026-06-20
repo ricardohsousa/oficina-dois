@@ -28,7 +28,7 @@ export const createOficinasModule = (tokenService: TokenService) => {
     transactionManager,
     registrarAuditoriaService,
   );
-  const listarOficinasUseCase = new ListarOficinasUseCase(oficinaRepository);
+  const listarOficinasUseCase = new ListarOficinasUseCase(oficinaRepository, prismaClient);
   const buscarOficinaPorIdUseCase = new BuscarOficinaPorIdUseCase(oficinaRepository);
   const inativarOficinaUseCase = new InativarOficinaUseCase(
     oficinaRepository,

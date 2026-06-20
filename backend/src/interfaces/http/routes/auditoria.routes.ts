@@ -3,6 +3,7 @@ import { Router } from 'express';
 import type { TokenService } from '../../../application/auth/services/token-service';
 import type { AuditoriaController } from '../controllers/auditoria.controller';
 import { createAuthenticationMiddleware } from '../middlewares/authentication.middleware';
+import { createPermissionMiddleware } from '../middlewares/require-permission.middleware';
 
 export const createAuditoriaRoutes = (
   auditoriaController: AuditoriaController,
@@ -10,6 +11,7 @@ export const createAuditoriaRoutes = (
 ) => {
   const router = Router();
   const authMiddleware = createAuthenticationMiddleware(tokenService);
+  const requireReadAuditoria = createPermissionMiddleware('auditoria', 'READ');
 
   /**
    * /auditorias:
@@ -45,7 +47,7 @@ export const createAuditoriaRoutes = (
    *               items:
    *                 $ref: '#/components/schemas/RegistroAuditoriaResponseDto'
    */
-  router.get('/auditorias', authMiddleware, auditoriaController.list);
+  router.get('/auditorias', authMiddleware, requireReadAuditoria, auditoriaController.list);
 
   return router;
 };

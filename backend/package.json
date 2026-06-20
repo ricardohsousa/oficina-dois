@@ -5,10 +5,13 @@
   "description": "Backend base do Sistema de Controle de Voluntarios do ELLP.",
   "main": "dist/server.js",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && npm run copy:assets",
+    "copy:assets": "cp -r src/infrastructure/pdf/assets dist/infrastructure/pdf/",
     "dev": "tsx watch src/server.ts",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:reset": "prisma migrate reset --skip-generate --skip-seed && npm run db:seed",
     "db:repair-migrations": "node scripts/repair-prisma-migration-checksums.mjs",
     "prestart": "npm run build",
     "prisma:studio": "prisma studio",
@@ -36,5 +39,8 @@
     "prisma": "^6.7.0",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }

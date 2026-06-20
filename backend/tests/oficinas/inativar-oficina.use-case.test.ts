@@ -66,7 +66,7 @@ test('InativarOficinaUseCase inativa oficina ativa e registra auditoria', async 
   });
 
   assert.equal(updatedOficinas.length, 1);
-  assert.equal(result.status, 'inativa');
+  assert.equal(result.status, 'encerrada');
   assert.equal(auditEntries.length, 1);
   assert.equal(auditEntries[0].acao, 'oficina.inativada');
   assert.equal(auditEntries[0].entidade, 'oficina');
@@ -77,7 +77,7 @@ test('InativarOficinaUseCase inativa oficina ativa e registra auditoria', async 
     usuarioEmail: 'antonio@example.com',
   });
   assert.equal((auditEntries[0].dadosAnteriores as Record<string, unknown>).status, 'ativa');
-  assert.equal((auditEntries[0].dadosNovos as Record<string, unknown>).status, 'inativa');
+  assert.equal((auditEntries[0].dadosNovos as Record<string, unknown>).status, 'encerrada');
 });
 
 test('InativarOficinaUseCase lança 409 quando oficina já está inativa', async () => {

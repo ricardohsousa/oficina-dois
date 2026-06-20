@@ -8,6 +8,7 @@ import { PrismaTransactionManager } from '../database/prisma/transaction-context
 import { PrismaRegistroAuditoriaRepository } from '../auditoria/repositories/prisma-registro-auditoria.repository';
 import { PrismaAtuacaoRepository } from './repositories/prisma-atuacao.repository';
 import { PrismaOficinaRepository } from '../oficinas/repositories/prisma-oficina.repository';
+import { PrismaProfessorOficinaRepository } from '../oficinas/repositories/prisma-professor-oficina.repository';
 import { PrismaVoluntarioRepository } from '../voluntarios/repositories/prisma-voluntario.repository';
 import { AtuacoesController } from '../../interfaces/http/controllers/atuacoes.controller';
 import { createAtuacoesRoutes } from '../../interfaces/http/routes/atuacoes.routes';
@@ -16,6 +17,7 @@ export const createAtuacoesModule = (tokenService: TokenService) => {
   const atuacaoRepository = new PrismaAtuacaoRepository(prismaClient);
   const voluntarioRepository = new PrismaVoluntarioRepository(prismaClient);
   const oficinaRepository = new PrismaOficinaRepository(prismaClient);
+  const professorOficinaRepository = new PrismaProfessorOficinaRepository(prismaClient);
   const transactionManager = new PrismaTransactionManager(prismaClient);
   const registroAuditoriaRepository = new PrismaRegistroAuditoriaRepository(prismaClient);
   const registrarAuditoriaService = new RegistrarAuditoriaService(registroAuditoriaRepository);
@@ -24,6 +26,7 @@ export const createAtuacoesModule = (tokenService: TokenService) => {
     atuacaoRepository,
     voluntarioRepository,
     oficinaRepository,
+    professorOficinaRepository,
     transactionManager,
     registrarAuditoriaService,
   );

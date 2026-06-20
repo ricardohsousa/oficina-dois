@@ -3,6 +3,7 @@ import { Router } from 'express';
 import type { TokenService } from '../../../application/auth/services/token-service';
 import type { AtuacoesController } from '../controllers/atuacoes.controller';
 import { createAuthenticationMiddleware } from '../middlewares/authentication.middleware';
+import { createPermissionMiddleware } from '../middlewares/require-permission.middleware';
 
 export const createAtuacoesRoutes = (
   atuacoesController: AtuacoesController,
@@ -10,6 +11,7 @@ export const createAtuacoesRoutes = (
 ): Router => {
   const router = Router();
   const authMiddleware = createAuthenticationMiddleware(tokenService);
+  const requireCreateAtuacao = createPermissionMiddleware('atuacoes', 'CREATE');
 
   /**
    * @swagger
@@ -52,6 +54,7 @@ export const createAtuacoesRoutes = (
   router.post(
     '/voluntarios/:voluntarioId/oficinas',
     authMiddleware,
+    requireCreateAtuacao,
     atuacoesController.associar,
   );
 

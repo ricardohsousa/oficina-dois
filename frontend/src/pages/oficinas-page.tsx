@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AlertCircle, Pencil, Plus, School, Slash } from 'lucide-react';
+import { AlertCircle, ChevronDown, ChevronUp, Pencil, Plus, School, Slash, UserPlus } from 'lucide-react';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -7,16 +7,22 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { CronogramaAtividades } from '@/components/oficinas/cronograma-atividades';
+import { ProfessoresVoluntarios } from '@/components/oficinas/professores-voluntarios';
+import { AdicionarVoluntarioModal } from '@/components/oficinas/adicionar-voluntario-modal';
 import { ApiError } from '@/lib/http';
 import { atualizarOficina } from '@/services/oficinas/atualizar-oficina';
 import { criarOficina } from '@/services/oficinas/criar-oficina';
 import { inativarOficina } from '@/services/oficinas/inativar-oficina';
 import { listarOficinas } from '@/services/oficinas/listar-oficinas';
+import { associarVoluntarioOficina } from '@/services/atuacoes/associar-voluntario-oficina';
 import type { CriarOficinaDto, OficinaResponseDto } from '@/services/oficinas/types';
+import { useAuth } from '@/contexts/auth-context';
 
 type OficinaFormValues = {
   nome: string;
   descricao: string;
+  ano: string;
   dataInicio: string;
   dataFim: string;
 };
@@ -24,6 +30,7 @@ type OficinaFormValues = {
 const emptyForm: OficinaFormValues = {
   nome: '',
   descricao: '',
+  ano: String(new Date().getFullYear()),
   dataInicio: '',
   dataFim: ''
 };
@@ -31,6 +38,7 @@ const emptyForm: OficinaFormValues = {
 const toDto = (values: OficinaFormValues): CriarOficinaDto => ({
   nome: values.nome,
   descricao: values.descricao,
+  ano: Number(values.ano),
   dataInicio: values.dataInicio,
   ...(values.dataFim ? { dataFim: values.dataFim } : {})
 });
@@ -38,6 +46,7 @@ const toDto = (values: OficinaFormValues): CriarOficinaDto => ({
 const toFormValues = (oficina: OficinaResponseDto): OficinaFormValues => ({
   nome: oficina.nome,
   descricao: oficina.descricao,
+  ano: String(oficina.ano),
   dataInicio: oficina.dataInicio,
   dataFim: oficina.dataFim ?? ''
 });
@@ -51,14 +60,19 @@ const formatDate = (value: string | null) => {
 };
 
 export function OficinasPage() {
+  const { user } = useAuth();
   const [items, setItems] = useState<OficinaResponseDto[]>([]);
   const [values, setValues] = useState<OficinaFormValues>(emptyForm);
   const [selected, setSelected] = useState<OficinaResponseDto | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
+  const [showAddVoluntario, setShowAddVoluntario] = useState<{ oficinaId: string; oficinaNome: string } | null>(null);
 
   const isEditing = Boolean(selected);
+  const isProfessor = user?.role === 'professor';
+  const isCoordenador = user?.role === 'coordenador_geral';
 
   const load = async () => {
     setIsLoading(true);
@@ -82,7 +96,7 @@ export function OficinasPage() {
     () => ({
       total: items.length,
       ativas: items.filter((item) => item.status === 'ativa').length,
-      inativas: items.filter((item) => item.status === 'inativa').length
+      inativas: items.filter((item) => item.status !== 'ativa').length
     }),
     [items]
   );
@@ -122,6 +136,17 @@ export function OficinasPage() {
     } catch (caughtError) {
       setError(caughtError instanceof ApiError ? caughtError : new ApiError(0));
     }
+  };
+
+  const handleAddVoluntario = async (voluntarioId: string) => {
+    if (!showAddVoluntario) return;
+
+    await associarVoluntarioOficina(voluntarioId, {
+      oficinaId: showAddVoluntario.oficinaId,
+      dataInicio: new Date().toISOString().split('T')[0],
+    });
+
+    await load();
   };
 
   return (
@@ -203,6 +228,20 @@ export function OficinasPage() {
                   />
                 </div>
                 <div className="space-y-2">
+                  <label htmlFor="ano" className="text-sm font-medium">
+                    Ano
+                  </label>
+                  <Input
+                    id="ano"
+                    type="number"
+                    min="2020"
+                    max="2100"
+                    value={values.ano}
+                    disabled={isSaving}
+                    onChange={(event) => setValues((current) => ({ ...current, ano: event.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
                   <label htmlFor="dataInicio" className="text-sm font-medium">
                     Data de início
                   </label>
@@ -250,64 +289,124 @@ export function OficinasPage() {
       <Card className="border-white/70 bg-white/85">
         <CardHeader>
           <CardTitle className="text-xl">Oficinas cadastradas</CardTitle>
-          <CardDescription>Selecione uma oficina para editar ou faça a inativação lógica diretamente na tabela.</CardDescription>
+          <CardDescription>Selecione uma oficina para editar, visualizar o cronograma ou faça a inativação lógica.</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <p className="text-sm text-muted-foreground">Carregando oficinas...</p>
+          ) : items.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Nenhuma oficina cadastrada</p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Período</TableHead>
-                  <TableHead>Descrição</TableHead>
-                  <TableHead className="w-[180px]">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {items.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell className="font-medium">{item.nome}</TableCell>
-                    <TableCell>
-                      <Badge variant={item.status === 'ativa' ? 'success' : 'secondary'}>
-                        {item.status === 'ativa' ? 'Ativa' : 'Inativa'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {formatDate(item.dataInicio)} - {formatDate(item.dataFim)}
-                    </TableCell>
-                    <TableCell className="max-w-md text-sm text-slate-600">{item.descricao}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setSelected(item);
-                            setValues(toFormValues(item));
-                          }}
+            <div className="space-y-4">
+              {items.map((item) => (
+                <div key={item.id} className="border rounded-lg overflow-hidden bg-white">
+                  <div className="flex items-center justify-between p-4 hover:bg-slate-50">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() =>
+                            setExpandedId(expandedId === item.id ? null : item.id)
+                          }
+                          className="text-slate-600 hover:text-slate-900"
                         >
-                          <Pencil className="h-4 w-4" />
-                          Editar
-                        </Button>
-                        {item.status === 'ativa' ? (
-                          <Button type="button" variant="destructive" size="sm" onClick={() => void handleInativar(item)}>
-                            <Slash className="h-4 w-4" />
-                            Inativar
-                          </Button>
-                        ) : null}
+                          {expandedId === item.id ? (
+                            <ChevronUp className="h-5 w-5" />
+                          ) : (
+                            <ChevronDown className="h-5 w-5" />
+                          )}
+                        </button>
+                        <div>
+                          <div className="font-semibold text-slate-900">{item.nome}</div>
+                          <div className="text-sm text-slate-600">{item.descricao}</div>
+                        </div>
                       </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="text-right text-sm">
+                        <div className="text-slate-600">
+                          {formatDate(item.dataInicio)} - {formatDate(item.dataFim)}
+                        </div>
+                        <div className="text-xs text-slate-500">Ano: {item.ano}</div>
+                      </div>
+                      <Badge variant={item.status === 'ativa' ? 'success' : 'secondary'}>
+                        {item.status === 'ativa' ? 'Ativa' : item.status}
+                      </Badge>
+                      <div className="flex gap-2">
+                        {(isCoordenador || isProfessor) && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setSelected(item);
+                              setValues(toFormValues(item));
+                            }}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {isCoordenador && item.status === 'ativa' && (
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => void handleInativar(item)}
+                          >
+                            <Slash className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {item.status === 'ativa' && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="text-purple-600 border-purple-200 hover:bg-purple-50"
+                            onClick={() =>
+                              setShowAddVoluntario({
+                                oficinaId: item.id,
+                                oficinaNome: item.nome,
+                              })
+                            }
+                          >
+                            <UserPlus className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Expandir detalhes */}
+                  {expandedId === item.id && (
+                    <div className="border-t bg-slate-50/50 p-4 space-y-6">
+                      {/* Professores e Voluntários */}
+                      <ProfessoresVoluntarios
+                        professores={item.professores}
+                        voluntarios={item.voluntarios}
+                      />
+
+                      {/* Cronograma */}
+                      <CronogramaAtividades atividades={item.atividades} ano={item.ano} />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Modal para adicionar voluntário */}
+      {showAddVoluntario && (
+        <AdicionarVoluntarioModal
+          oficinaId={showAddVoluntario.oficinaId}
+          oficinaNome={showAddVoluntario.oficinaNome}
+          voluntariosAtuais={
+            items.find((i) => i.id === showAddVoluntario.oficinaId)?.voluntarios ?? []
+          }
+          onAdd={handleAddVoluntario}
+          onClose={() => setShowAddVoluntario(null)}
+        />
+      )}
     </main>
   );
 }

@@ -3,6 +3,7 @@ import { Router } from 'express';
 import type { TokenService } from '../../../application/auth/services/token-service';
 import type { OficinasController } from '../controllers/oficinas.controller';
 import { createAuthenticationMiddleware } from '../middlewares/authentication.middleware';
+import { createPermissionMiddleware } from '../middlewares/require-permission.middleware';
 
 export const createOficinasRoutes = (
   oficinasController: OficinasController,
@@ -10,6 +11,10 @@ export const createOficinasRoutes = (
 ): Router => {
   const router = Router();
   const authMiddleware = createAuthenticationMiddleware(tokenService);
+  const requireCreateOficina = createPermissionMiddleware('oficinas', 'CREATE');
+  const requireReadOficina = createPermissionMiddleware('oficinas', 'READ');
+  const requireUpdateOficina = createPermissionMiddleware('oficinas', 'UPDATE');
+  const requireDeleteOficina = createPermissionMiddleware('oficinas', 'DELETE');
 
   /**
    * @swagger
@@ -31,7 +36,7 @@ export const createOficinasRoutes = (
    *       401:
    *         description: Não autorizado
    */
-  router.get('/oficinas', authMiddleware, oficinasController.list);
+  router.get('/oficinas', authMiddleware, requireReadOficina, oficinasController.list);
 
   /**
    * @swagger
@@ -61,7 +66,7 @@ export const createOficinasRoutes = (
    *       404:
    *         description: Oficina não encontrada
    */
-  router.get('/oficinas/:id', authMiddleware, oficinasController.getById);
+  router.get('/oficinas/:id', authMiddleware, requireReadOficina, oficinasController.getById);
 
   /**
    * @swagger
@@ -88,8 +93,10 @@ export const createOficinasRoutes = (
    *         description: Erro de validação nos dados enviados
    *       401:
    *         description: Não autorizado
+   *       403:
+   *         description: Acesso negado (permissão insuficiente)
    */
-  router.post('/oficinas', authMiddleware, oficinasController.create);
+  router.post('/oficinas', authMiddleware, requireCreateOficina, oficinasController.create);
 
   /**
    * @swagger
@@ -124,10 +131,12 @@ export const createOficinasRoutes = (
    *         description: Erro de validação nos dados enviados
    *       401:
    *         description: Não autorizado
+   *       403:
+   *         description: Acesso negado (permissão insuficiente)
    *       404:
    *         description: Oficina não encontrada
    */
-  router.put('/oficinas/:id', authMiddleware, oficinasController.update);
+  router.put('/oficinas/:id', authMiddleware, requireUpdateOficina, oficinasController.update);
 
   /**
    * @swagger
@@ -154,12 +163,14 @@ export const createOficinasRoutes = (
    *               $ref: '#/components/schemas/OficinaResponseDto'
    *       401:
    *         description: Não autorizado
+   *       403:
+   *         description: Acesso negado (permissão insuficiente)
    *       404:
    *         description: Oficina não encontrada
    *       409:
    *         description: Oficina já está inativa
    */
-  router.patch('/oficinas/:id/inativar', authMiddleware, oficinasController.inativar);
+  router.patch('/oficinas/:id/inativar', authMiddleware, requireDeleteOficina, oficinasController.inativar);
 
   return router;
 };

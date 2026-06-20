@@ -34,8 +34,10 @@ export class JwtTokenService implements TokenService {
         typeof decodedToken.sub !== 'string' ||
         typeof decodedToken.email !== 'string' ||
         typeof decodedToken.nome !== 'string' ||
+        typeof decodedToken.role !== 'string' ||
         !decodedToken.sub ||
-        !decodedToken.email
+        !decodedToken.email ||
+        !decodedToken.role
       ) {
         throw new Error('Invalid token payload.');
       }
@@ -43,7 +45,8 @@ export class JwtTokenService implements TokenService {
       return {
         sub: decodedToken.sub,
         email: decodedToken.email,
-        nome: decodedToken.nome
+        nome: decodedToken.nome,
+        role: decodedToken.role
       };
     } catch {
       throw new HttpError({

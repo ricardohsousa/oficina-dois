@@ -3,6 +3,7 @@ export type UserCredentials = {
   nome: string;
   email: string;
   senhaHash: string;
+  role: string;
 };
 
 export interface UserAuthRepository {

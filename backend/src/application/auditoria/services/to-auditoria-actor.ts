@@ -12,5 +12,6 @@ export const toAuditoriaActor = (auth?: AuthTokenPayload): AuditoriaActor | null
     usuarioId: Number.isNaN(usuarioId) ? null : usuarioId,
     usuarioNome: auth.nome,
     usuarioEmail: auth.email,
+    role: auth.role,
   };
 };
