@@ -12,26 +12,76 @@ model Usuario {
   nome      String
   email     String   @unique
   senhaHash String   @map("senha_hash")
+  role      String   @default("voluntario") // "coordenador_geral", "professor", "voluntario"
+  ativo     Boolean  @default(true)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
   registrosAuditoria RegistroAuditoria[]
+  professores_oficinas ProfessorOficina[]
 
   @@map("usuarios")
+}
+
+model ProfessorOficina {
+  id        String   @id @default(uuid())
+  professorId Int    @map("professor_id")
+  oficinaId String   @map("oficina_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  professor Usuario   @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  oficina   Oficina   @relation(fields: [oficinaId], references: [id], onDelete: Cascade)
+
+  @@unique([professorId, oficinaId])
+  @@map("professores_oficinas")
 }
 
 model Oficina {
   id          String    @id @default(uuid())
   nome        String
   descricao   String
-  status      String    @default("ativa")
+  ano         Int                        // Ano da oficina (ex: 2025)
+  status      String    @default("ativa") // "ativa", "encerrada", "cancelada"
   dataInicio  DateTime  @map("data_inicio")
   dataFim     DateTime? @map("data_fim")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
-  atuacoes    Atuacao[]
+  atuacoes            Atuacao[]
+  professores_oficinas ProfessorOficina[]
+  atividades          Atividade[]
 
   @@map("oficinas")
+}
+
+model Atividade {
+  id          String    @id @default(uuid())
+  oficinaId   String    @map("oficina_id")
+  nome        String
+  descricao   String?
+  status      String    @default("planejada") // "planejada", "em_progresso", "concluida", "cancelada"
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  oficina     Oficina   @relation(fields: [oficinaId], references: [id], onDelete: Cascade)
+  meses       AtividadeMes[]
+
+  @@index([oficinaId])
+  @@map("atividades")
+}
+
+model AtividadeMes {
+  id          String    @id @default(uuid())
+  atividadeId String    @map("atividade_id")
+  mes         Int                       // 1-12 (janeiro-dezembro)
+  descricao   String?                   // Descrição do que será feito neste mês
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  atividade   Atividade @relation(fields: [atividadeId], references: [id], onDelete: Cascade)
+
+  @@unique([atividadeId, mes])
+  @@index([atividadeId])
+  @@map("atividades_meses")
 }
 
 model Voluntario {

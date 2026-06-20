@@ -64,6 +64,10 @@ const makeUseCase = (overrides: {
       update: async () => undefined,
     },
     {
+      isProfessorOfOficina: async () => true,
+      findByProfessorId: async () => [],
+    },
+    {
       runInTransaction: async (operation) => operation({ transaction: {} }),
     },
     {
@@ -100,6 +104,10 @@ test('AssociarVoluntarioOficinaUseCase cria vínculo e registra auditoria', asyn
       findAll: async () => [],
       findById: async () => createOficinaAtiva(),
       update: async () => undefined,
+    },
+    {
+      isProfessorOfOficina: async () => true,
+      findByProfessorId: async () => [],
     },
     {
       runInTransaction: async (operation) => operation({ transaction: {} }),

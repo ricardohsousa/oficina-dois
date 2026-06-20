@@ -4,18 +4,21 @@ import { Atuacao } from '../../../domain/atuacoes/entities/atuacao';
 import type { AtuacaoRepository } from '../../../domain/atuacoes/repositories/atuacao.repository';
 import type { OficinaRepository } from '../../../domain/oficinas/repositories/oficina.repository';
 import type { VoluntarioRepository } from '../../../domain/voluntarios/repositories/voluntario.repository';
+import type { ProfessorOficinaRepository } from '../../../domain/oficinas/repositories/professor-oficina.repository';
 import { ConflictError } from '../../../shared/errors/conflict-error';
 import { HttpError } from '../../../shared/errors/http-error';
 import type { TransactionManager } from '../../../shared/database/transaction-manager';
 import type { AssociarVoluntarioOficinaDto } from '../dtos/associar-voluntario-oficina.dto';
 import type { AtuacaoResponseDto } from '../dtos/atuacao-response.dto';
 import { toAtuacaoResponseDto } from './atuacao-presenter';
+import { UserRole } from '../../../shared/types/permissions';
 
 export class AssociarVoluntarioOficinaUseCase {
   constructor(
     private readonly atuacaoRepository: AtuacaoRepository,
     private readonly voluntarioRepository: VoluntarioRepository,
     private readonly oficinaRepository: OficinaRepository,
+    private readonly professorOficinaRepository: ProfessorOficinaRepository,
     private readonly transactionManager: TransactionManager,
     private readonly registrarAuditoriaService: RegistrarAuditoriaService,
   ) {}
@@ -26,6 +29,24 @@ export class AssociarVoluntarioOficinaUseCase {
     actor: AuditoriaActor | null = null,
   ): Promise<AtuacaoResponseDto> {
     return this.transactionManager.runInTransaction(async (context) => {
+      // Verificar se é professor e se a oficina é dele
+      if (actor?.role === UserRole.PROFESSOR && actor?.usuarioId) {
+        const isProfessorOfOficina = await this.professorOficinaRepository.isProfessorOfOficina(
+          actor.usuarioId,
+          input.oficinaId,
+          context,
+        );
+
+        if (!isProfessorOfOficina) {
+          throw new HttpError({
+            status: 403,
+            title: 'Acesso negado',
+            detail: 'Você só pode adicionar voluntários às suas próprias oficinas.',
+            type: 'https://ellp.local/errors/forbidden',
+          });
+        }
+      }
+
       const voluntario = await this.voluntarioRepository.findById(voluntarioId, context);
 
       if (!voluntario) {

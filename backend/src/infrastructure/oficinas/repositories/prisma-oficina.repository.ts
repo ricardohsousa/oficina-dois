@@ -12,6 +12,7 @@ export class PrismaOficinaRepository implements OficinaRepository {
     id: string;
     nome: string;
     descricao: string;
+    ano: number;
     status: string;
     dataInicio: Date;
     dataFim: Date | null;
@@ -22,6 +23,7 @@ export class PrismaOficinaRepository implements OficinaRepository {
       id: data.id,
       nome: data.nome,
       descricao: data.descricao,
+      ano: data.ano,
       status: data.status as OficinaStatus,
       dataInicio: data.dataInicio.toISOString().split('T')[0],
       dataFim: data.dataFim?.toISOString().split('T')[0] ?? null,
@@ -38,6 +40,7 @@ export class PrismaOficinaRepository implements OficinaRepository {
         id: oficina.id,
         nome: oficina.nome,
         descricao: oficina.descricao,
+        ano: oficina.ano,
         status: oficina.status,
         dataInicio: new Date(oficina.dataInicio),
         dataFim: oficina.dataFim ? new Date(oficina.dataFim) : null,
@@ -72,6 +75,7 @@ export class PrismaOficinaRepository implements OficinaRepository {
       data: {
         nome: oficina.nome,
         descricao: oficina.descricao,
+        ano: oficina.ano,
         status: oficina.status,
         dataInicio: new Date(oficina.dataInicio),
         dataFim: oficina.dataFim ? new Date(oficina.dataFim) : null,

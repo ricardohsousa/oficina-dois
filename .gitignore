@@ -1,0 +1,75 @@
+# ===========================================
+# Gitignore - Sistema ELLP
+# Apenas backend e frontend são rastreados
+# ===========================================
+
+# Ignorar tudo na raiz
+/*
+!.gitignore
+!README.md
+!docker-compose.yml
+!backend/
+!frontend/
+
+# ===========================================
+# Backend
+# ===========================================
+
+# Node modules
+backend/node_modules/
+
+# Build output
+backend/dist/
+
+# Environment variables
+backend/.env
+
+# Prisma
+backend/prisma/migrations/**/migration_lock.toml
+
+# Logs
+backend/*.log
+backend/npm-debug.log*
+
+# Storage (PDFs gerados)
+backend/storage/
+
+# Coverage
+backend/coverage/
+
+# IDE
+backend/.vscode/
+backend/.idea/
+
+# OS
+backend/.DS_Store
+backend/Thumbs.db
+
+# ===========================================
+# Frontend
+# ===========================================
+
+# Node modules
+frontend/node_modules/
+
+# Build output
+frontend/dist/
+
+# Environment variables
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+
+# Logs
+frontend/*.log
+frontend/npm-debug.log*
+
+# Editor directories and files
+frontend/.vscode/
+frontend/.idea/
+frontend/*.swp
+frontend/*.swo
+
+# OS
+frontend/.DS_Store
+frontend/Thumbs.db

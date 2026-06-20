@@ -23,7 +23,8 @@ export class PrismaUserAuthRepository implements UserAuthRepository {
       id: user.id,
       nome: user.nome,
       email: user.email,
-      senhaHash: user.senhaHash
+      senhaHash: user.senhaHash,
+      role: user.role
     };
   }
 }

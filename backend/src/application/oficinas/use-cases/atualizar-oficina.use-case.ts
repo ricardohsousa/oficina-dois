@@ -36,6 +36,7 @@ export class AtualizarOficinaUseCase {
         id,
         nome: input.nome.trim(),
         descricao: input.descricao.trim(),
+        ano: existing.ano,
         status: existing.status,
         dataInicio: input.dataInicio,
         dataFim: input.dataFim ?? null,

@@ -3,6 +3,7 @@ import { TokenService } from '../../../application/auth/services/token-service';
 
 import { VoluntariosController } from '../controllers/voluntarios.controller';
 import { createAuthenticationMiddleware } from '../middlewares/authentication.middleware';
+import { createPermissionMiddleware } from '../middlewares/require-permission.middleware';
 
 export const createVoluntariosRoutes = (
   voluntariosController: VoluntariosController,
@@ -10,6 +11,10 @@ export const createVoluntariosRoutes = (
 ): Router => {
   const router = Router();
   const authMiddleware = createAuthenticationMiddleware(tokenService);
+  const requireCreateVoluntario = createPermissionMiddleware('voluntarios', 'CREATE');
+  const requireReadVoluntario = createPermissionMiddleware('voluntarios', 'READ');
+  const requireUpdateVoluntario = createPermissionMiddleware('voluntarios', 'UPDATE');
+  const requireDeleteVoluntario = createPermissionMiddleware('voluntarios', 'DELETE');
 
   /**
    * @swagger
@@ -56,7 +61,7 @@ export const createVoluntariosRoutes = (
    *       401:
    *         description: Não autorizado
    */
-  router.get('/voluntarios', authMiddleware, voluntariosController.list);
+  router.get('/voluntarios', authMiddleware, requireReadVoluntario, voluntariosController.list);
 
   /**
    * @swagger
@@ -83,10 +88,12 @@ export const createVoluntariosRoutes = (
    *         description: Erro de validação nos dados enviados
    *       401:
    *         description: Não autorizado
+   *       403:
+   *         description: Acesso negado (permissão insuficiente)
    *       409:
    *         description: Conflito de dados (CPF ou E-mail já cadastrado)
    */
-  router.post('/voluntarios', authMiddleware, voluntariosController.create);
+  router.post('/voluntarios', authMiddleware, requireCreateVoluntario, voluntariosController.create);
 
   /**
    * @swagger
@@ -121,12 +128,14 @@ export const createVoluntariosRoutes = (
    *         description: Erro de validação nos dados enviados
    *       401:
    *         description: Não autorizado
+   *       403:
+   *         description: Acesso negado (permissão insuficiente)
    *       404:
    *         description: Voluntário não encontrado
    *       409:
    *         description: Conflito de dados (CPF ou E-mail já cadastrado)
    */
-  router.put('/voluntarios/:id', authMiddleware, voluntariosController.update);
+  router.put('/voluntarios/:id', authMiddleware, requireUpdateVoluntario, voluntariosController.update);
 
   /**
    * @swagger
@@ -143,7 +152,7 @@ export const createVoluntariosRoutes = (
    *         schema:
    *           type: string
    *           format: uuid
-   *         description: ID do voluntÃ¡rio
+   *         description: ID do voluntário
  *     responses:
  *       200:
  *         description: Voluntário inativado com sucesso
@@ -155,12 +164,14 @@ export const createVoluntariosRoutes = (
  *         description: Erro de validação nos dados enviados
  *       401:
  *         description: Não autorizado
+ *       403:
+ *         description: Acesso negado (permissão insuficiente)
  *       404:
  *         description: Voluntário não encontrado
  *       409:
  *         description: Voluntário já está inativo
    */
-  router.patch('/voluntarios/:id/inativar', authMiddleware, voluntariosController.inativar);
+  router.patch('/voluntarios/:id/inativar', authMiddleware, requireDeleteVoluntario, voluntariosController.inativar);
 
   /**
    * @swagger
@@ -190,7 +201,7 @@ export const createVoluntariosRoutes = (
    *       404:
    *         description: Voluntário não encontrado
    */
-  router.get('/voluntarios/:id', authMiddleware, voluntariosController.getById);
+  router.get('/voluntarios/:id', authMiddleware, requireReadVoluntario, voluntariosController.getById);
 
   return router;
 };

@@ -7,6 +7,7 @@ export type AuditoriaActor = {
   usuarioId: number | null;
   usuarioNome: string | null;
   usuarioEmail: string | null;
+  role?: string | null;
 };
 
 export type RegistrarAuditoriaInput = {

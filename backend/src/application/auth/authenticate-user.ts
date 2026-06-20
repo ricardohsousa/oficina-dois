@@ -15,6 +15,7 @@ type AuthenticateUserResult = {
     id: number;
     nome: string;
     email: string;
+    role: string;
   };
 };
 
@@ -59,13 +60,15 @@ export class AuthenticateUser {
       accessToken: this.tokenService.sign({
         sub: String(user.id),
         email: user.email,
-        nome: user.nome
+        nome: user.nome,
+        role: user.role
       }),
       tokenType: 'Bearer',
       user: {
         id: user.id,
         nome: user.nome,
-        email: user.email
+        email: user.email,
+        role: user.role
       }
     };
   }

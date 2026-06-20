@@ -2,6 +2,7 @@ export type AuthenticatedUser = {
   id: number;
   nome: string;
   email: string;
+  role: string;
 };
 
 export type LoginRequestDto = {
